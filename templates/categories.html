@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Categories</h1>
+<div class="d-flex flex-wrap">
+  {% for category in data %}
+  <div class="m-2 p-3 border border-black text-center">
+    <h4>{{ category.id }}</h4>
+    <a href=" {{ url_for('categories.category_detail', name=category.name) }}">
+      <h6>{{ category.name }}</h6>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

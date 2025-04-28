@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>My name is {{ customer.name }}</h3>
+<h4>{{ customer.phone }}</h4>
+
+<table class="table table-bordered table-striped table-sm table-hover">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Created</th>
+            <th>Completed</th>
+            <th>Amount</th>
+            <th>Estimate</th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider">
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <th>
+                <a href="{{ url_for('single_order_page', order_id=order.id)}}">{{ order.id }}</a>
+            </th>
+            <td>
+                {{ order.created }}
+            </td>
+            <td>
+                {% if not order.completed %}
+                Not Completed
+                {% else %}
+                {{ order.completed }}
+                {% endif %}
+
+            </td>
+            <td>
+                {{ order.amount }}
+            </td>
+            <td>
+                Estimated total: {{ order.estimate() }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+{% endblock %}

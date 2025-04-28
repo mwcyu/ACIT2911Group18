@@ -1,0 +1,107 @@
+{% extends "base.html" %} {% block content %}
+
+<h1>All Orders</h1>
+<h5>Completed Dates</h5>
+<form method="GET" action="{{ url_for('orders.orders_page') }}" class="mb-3">
+  <label>Filter by:</label>
+  <label for="completed_filter">Completed</label>
+  <input type="radio" id="completed_filter" name="date_filter"
+  value="completed_filter" {% if date_filter == 'completed_filter' %} checked {%
+  endif %} />
+
+  <label for="created_filter">Created</label>
+  <input type="radio" id="created_filter" name="date_filter"
+  value="created_filter" {% if date_filter == 'created_filter' %} checked {%
+  endif %} /><br />
+
+  <label for="start_date">From:</label>
+  <input
+    type="date"
+    id="start_date"
+    name="start_date"
+    value="{{ start_date or '' }}"
+  />
+
+  <label for="end_date">To:</label>
+  <input
+    type="date"
+    id="end_date"
+    name="end_date"
+    value="{{ end_date or '' }}"
+  />
+
+  <button type="submit" class="btn btn-primary">Filter</button>
+
+  <a href="{{ url_for('orders.orders_page') }}" class="btn btn-secondary"
+    >Reset</a
+  >
+</form>
+
+{% if start_date and end_date%}
+<h4>Showing Orders from {{start_date}} to {{end_date}}</h4>
+{% endif %}
+<div class="d-flex flex-wrap">
+  <table class="table table-bordered table-striped table-sm table-hover">
+    <thead>
+      <tr>
+        <th>
+          Order ID
+          <a
+            href="{{ url_for('orders.orders_page', start_date=start_date, end_date=end_date, sort='id', sort_order='asc' if sort_order == 'desc' else 'desc', date_filter=date_filter) }}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Customer
+          <a
+            href="{{ url_for('orders.orders_page', start_date=start_date, end_date=end_date, sort='customer', sort_order='asc' if sort_order == 'desc' else 'desc', date_filter=date_filter) }}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Created
+          <a
+            href="{{ url_for('orders.orders_page', start_date=start_date, end_date=end_date, sort='created', sort_order='asc' if sort_order == 'desc' else 'desc', date_filter=date_filter) }}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Completed
+          <a
+            href="{{ url_for('orders.orders_page', start_date=start_date, end_date=end_date, sort='completed', sort_order='asc' if sort_order == 'desc' else 'desc', date_filter=date_filter) }}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Amount
+          <a
+            href="{{ url_for('orders.orders_page', start_date=start_date, end_date=end_date, sort='amount', sort_order='asc' if sort_order == 'desc' else 'desc', date_filter=date_filter) }}"
+            >sort</a
+          >
+        </th>
+        <th>Estimate</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider"></tbody>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <th>
+          <a href="{{ url_for('orders.single_order_page', order_id=order.id)}}"
+            >{{ order.id }}</a
+          >
+        </th>
+        <td>{{ order.customer.name }}</td>
+        <td>{{ order.created }}</td>
+        <td>
+          {% if not order.completed %} Not Completed {% else %} {{
+          order.completed }} {% endif %}
+        </td>
+        <td>{{ order.amount }}</td>
+        <td>Estimated total: {{ order.estimate() }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

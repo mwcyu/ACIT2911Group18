@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- <div class="container"> -->
+<!-- </div> -->
+
+<h3>Customer: <a href="{{url_for('customers.customer_detail', id=order.customer_id)}}">{{order.customer.name}}</a></h3>
+<h3>Order ID: {{ order.id }}</h3>
+<h3>Created: {{order.created}}</h3>
+<h3>Completed: {{ order.completed }}</h3>
+<div class="d-flex flex-wrap table-responsive">
+    <table class="table table-bordered table-striped table-sm table-hover">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Unit Price</th>
+                <th>Unit Inventory</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for productorder in order.items %}
+            <tr>
+                <td>
+                    {{ productorder.product.name }}
+                </td>
+                <td>
+                    $ {{productorder.product.price}}
+                </td>
+                <td>
+                    {{productorder.product.available}}
+                </td>
+                <td>
+                    {{ productorder.quantity }}
+                </td>
+                <td>
+                    $ {{ productorder.product.price * productorder.quantity }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if not order.completed %}
+    <form method="post" action="{{ url_for('orders.complete_order', id=order.id) }}">
+        <h4>Order Total: {{order.estimate()}}</h4>
+        <button type="submit" style="background-color: lightcoral;">Complete order</button>
+    </form>
+    {% else %}
+    <h4>Order Total: {{order.amount}}</h4></div>
+    <button style="background-color: aquamarine;">Order Completed</button>
+    {% endif %}
+
+       
+</div>
+{% endblock %}

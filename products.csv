@@ -1,0 +1,55 @@
+name,price,available,category
+apple,1.49,10,produce
+bananas,3.49,5,produce
+lemon,1.00,5,produce
+orange,1.19,0,produce
+raspberries,7.99,10,produce
+potato,1.49,22,produce
+onions,3.99,12,produce
+tomato,2.99,25,produce
+cucumber,2.49,15,produce
+bell pepper,3.29,18,produce
+carrot,1.29,40,produce
+broccoli,2.79,8,produce
+lettuce,2.99,30,produce
+grapes,5.99,12,produce
+watermelon,6.99,4,produce
+blueberries,6.49,20,produce
+strawberries,5.99,14,produce
+bread,1.59,50,bakery
+baguette,2.49,30,bakery
+croissant,1.99,25,bakery
+muffin,2.79,20,bakery
+donut,1.89,15,bakery
+chicken breast,10.78,3,deli
+chicken thigh,8.99,5,deli
+parma ham,6.99,2400,deli
+ground beef,6.99,10,deli
+eggs,4.49,24,deli
+turkey slices,5.99,10,deli
+salami,7.99,12,deli
+bacon,9.49,20,deli
+cheese,8.99,9,dairy
+goat cheese,11.99,9,dairy
+milk,3.49,0,dairy
+butter,4.99,15,dairy
+yogurt,2.79,25,dairy
+whipping cream,3.99,10,dairy
+ice cream,6.99,18,dairy
+almond milk,4.49,12,dairy
+oat milk,5.29,10,dairy
+tofu,3.99,20,plant-based
+soy milk,4.19,15,plant-based
+vegan cheese,5.99,8,plant-based
+tempeh,4.99,10,plant-based
+seitan,6.49,5,plant-based
+cereal,5.99,30,pantry
+pasta,2.49,50,pantry
+rice,3.99,40,pantry
+beans,1.99,60,pantry
+olive oil,8.99,15,pantry
+peanut butter,4.79,20,pantry
+coffee,9.99,12,beverages
+tea,5.99,18,beverages
+juice,3.49,25,beverages
+soda,1.99,50,beverages

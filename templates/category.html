@@ -1,0 +1,25 @@
+{% extends "base.html" %} 
+{% block content %}
+
+<h1>Products in {{ category.name }}</h1>
+<div class="d-flex flex-wrap table-responsive">
+  <table class="table table-bordered table-striped table-sm table-hover">
+    <thead>
+      <tr>
+        <th>Products</th>
+        <th>Price</th>
+        <th>Inventory</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+      {% for product in products %}
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>$ {{ product.price }}</td>
+        <td>{{ product.available }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

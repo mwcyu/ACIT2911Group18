@@ -1,0 +1,51 @@
+{% extends "base.html" %} {% block content %}
+<h1>All Products</h1>
+<div class="d-flex flex-wrap">
+  <table class="table table-bordered table-striped table-sm table-hover">
+    <thead>
+      <tr>
+        <th>
+          ID
+          <a
+            href="/products/?sort=id&sort_order={{ 'asc' if sort_order == 'desc' else 'desc'}}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Products
+          <a
+            href="/products/?sort=name&sort_order={{ 'asc' if sort_order == 'desc' else 'desc'}}"
+            >sort</a
+          >
+        </th>
+        <th>
+          Price
+          <a
+            href="/products/?sort=price&sort_order={{ 'asc' if sort_order == 'desc' else 'desc'}}"
+            >sort</a
+          >
+        </th>
+        <th>Inventory</th>
+        <th>Category</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider"></tbody>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <th>{{ product.id }}</th>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.available }}</td>
+        <td>
+          <a
+            href="{{ url_for('categories.category_detail', name=product.category.name) }}"
+            >{{ product.category.name }}</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

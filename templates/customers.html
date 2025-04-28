@@ -1,0 +1,30 @@
+{% extends "base.html" %} {% block content %}
+
+<h1>Customers</h1>
+<div class="d-flex flex-wrap">
+  <table class="table table-bordered table-hover table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phone Number</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider"></tbody>
+    <tbody>
+      {% for customer in data %}
+
+      <tr>
+        <th>{{ customer.id }}</th>
+        <td>
+          <a href=" {{ url_for('customers.customer_detail', id=customer.id) }}"
+            >{{ customer.name}}</a
+          >
+        </td>
+        <td>{{ customer.phone}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
