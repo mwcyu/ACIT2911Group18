@@ -45,9 +45,6 @@ def load_user(user_id):
 def home_page():
     stmt = db.select(Category)
     categories = db.session.execute(stmt).scalars()
-    
-    
-    
     return render_template("base.html", categories=categories, current_user=current_user)
 
 
