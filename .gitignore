@@ -1,2 +1,4 @@
 /venv/
-__pycahae__/
+/__pycahae__/
+/models/__pycache__/
+/routes/__pycache__/
