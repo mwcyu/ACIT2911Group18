@@ -58,6 +58,7 @@ def login_page():
         stmt = db.select(Customer).where(Customer.phone == phone)
         customer = db.session.execute(stmt).scalar_one_or_none()
         
+        # Hello
         if customer and customer.password == password:
             login_user(customer)
 
