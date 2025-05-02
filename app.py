@@ -4,7 +4,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from models import Customer,Category,Product,Order,ProductOrder
 from pathlib import Path
 from db import db
-from routes import api_bp, products_bp, customers_bp, categories_bp, orders_bp, practice_bp
+from routes import api_bp, products_bp, customers_bp, categories_bp, orders_bp, practice_bp, cart_bp
 
 app = Flask (__name__)
 app.config["SECRET_KEY"] = '13922688c391dba2f50e73a51598e97f1bfb99d739339cc63e87138b171dab1c'
@@ -25,6 +25,7 @@ app.register_blueprint(orders_bp, url_prefix="/orders")
 app.register_blueprint(categories_bp, url_prefix="/categories")
 app.register_blueprint(customers_bp, url_prefix="/customers")
 app.register_blueprint(practice_bp,url_prefix="/practice")
+app.register_blueprint(cart_bp, url_prefix="/cart" )
 
 
 # Adjust to your needs / liking. Most likely, you want to use "." for your instance path. This is up to you. You may also use "data"

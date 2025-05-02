@@ -27,6 +27,7 @@
         </th>
         <th>Inventory</th>
         <th>Category</th>
+        <th>Add to Cart</th>
       </tr>
     </thead>
     <tbody class="table-group-divider"></tbody>
@@ -42,6 +43,9 @@
             href="{{ url_for('categories.category_detail', name=product.category.name) }}"
             >{{ product.category.name }}</a
           >
+        </td>
+        <td>
+          <a href="{{ url_for('cart.add_to_cart', id=product.id) }}">Add</a>
         </td>
       </tr>
       {% endfor %}
