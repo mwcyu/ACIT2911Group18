@@ -32,3 +32,9 @@ def all_products_page():
                            products=products, 
                            sort_by=sort, 
                            sort_order=sort_order)
+
+
+@products_bp.route("/<int:id>")
+def individual_product_page(id):
+    product = db.get_or_404(Product, id)
+    return render_template("single_product.html", product=product)
