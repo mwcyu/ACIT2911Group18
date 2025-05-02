@@ -1,0 +1,59 @@
+{% extends "base.html" %} {% block pagetitle %}Login - Store{% endblock %} {%
+block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="text-center">Login</h2>
+
+        {% if error_message %}
+        <div class="alert alert-danger alert-dismissible fade show">
+          {{ error_message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login_page') }}">
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input
+              type="text"
+              class="form-control"
+              id="phone"
+              name="phone"
+              placeholder="Enter your phone number"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+
+        <div class="text-center mt-3">
+          Don't have an account?
+          <a href="{{ url_for('register_page') }}">Register here</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

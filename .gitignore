@@ -1,4 +1,4 @@
 /venv/
-__pychache__/
-models/__pychache__
-routes/__pychache__
+/__pycache__/
+/routes/__pycache__
+/models/__pycache__

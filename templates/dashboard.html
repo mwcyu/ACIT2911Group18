@@ -1,0 +1,30 @@
+{% extends "base.html" %} {% block pagetitle %}Dashboard{% endblock %} {% block
+content %}
+<h2>Your Orders</h2>
+
+{% if orders %}
+<ul class="list-group">
+  {% for order in orders %}
+  <li class="list-group-item mb-3">
+    <strong>Order ID:</strong> {{ order.id }}<br />
+    <strong>Created:</strong> {{ order.created.strftime("%Y-%m-%d %H:%M") }}<br />
+
+    {% if order.completed %}
+    <strong>Status:</strong> Completed on {{ order.completed.strftime("%Y-%m-%d
+    %H:%M") }}<br />
+    <strong>Final Amount:</strong> ${{ order.amount }} {% else %}
+    <strong>Status:</strong> Pending<br />
+    <strong>Estimated Total:</strong> ${{ order.estimate() }} {% endif %}
+
+    <br /><strong>Products:</strong>
+    <ul>
+      {% for item in order.items %}
+      <li>{{ item.product.name }} x{{ item.quantity }}</li>
+      {% endfor %}
+    </ul>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>You have no orders yet.</p>
+{% endif %} {% endblock %}
