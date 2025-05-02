@@ -34,7 +34,12 @@
     <tbody>
       {% for product in products %}
       <tr>
-        <th>{{ product.id }}</th>
+        <th>
+          <a
+            href="{{ url_for('products.individual_product_page', id=product.id)}}"
+            >{{ product.id }}</a
+          >
+        </th>
         <td>{{ product.name }}</td>
         <td>{{ product.price }}</td>
         <td>{{ product.available }}</td>
