@@ -152,24 +152,30 @@ def customers_api():
 @api_bp.route("/customers/is_admin", methods=["POST"])
 def make_admin_api():
     data = request.get_json()
-    
+
     """
+    Expects JSON:
     {
         "toggle_admin_for": 1
     }
     """
-    
+
+    # Validate input
+    if not data or "toggle_admin_for" not in data:
+        return {"error": "Missing 'toggle_admin_for' in request"}, 400
+
     stmt = db.select(Customer).where(Customer.id == data["toggle_admin_for"])
-    customer = db.session.execute(stmt).scalar()
-    
-    if customer.is_admin:
-        customer.is_admin = False
-    else:
-        customer.is_admin = True
-        
+    customer = db.session.execute(stmt).scalar_one_or_none()
+
+    if not customer:
+        return {"error": "Customer not found"}, 404
+
+    # Toggle admin
+    customer.is_admin = not customer.is_admin
     db.session.commit()
-    
+
     return jsonify(customer.to_json())
+
 
 @api_bp.route("/categories")
 def categories_api():

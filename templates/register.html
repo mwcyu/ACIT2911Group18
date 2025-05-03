@@ -4,55 +4,50 @@ block content %}
   <div class="col-md-6">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h2 class="card-title text-center">Register</h2>
+        <h2 class="text-center">Register</h2>
 
-        {% if error_message %}
-        <div class="alert alert-danger">{{ error_message }}</div>
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ category }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button type="button" class="btn-close"></button>
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
 
         <form method="POST" action="{{ url_for('auth.register') }}">
+          {{ form.hidden_tag() }}
+
           <div class="mb-3">
-            <label for="name" class="form-label">Full Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="name"
-              name="name"
-              placeholder="Enter your full name"
-              required
-            />
+            {{ form.name.label(class="form-label") }} {{
+            form.name(class="form-control", placeholder="Enter your name") }} {%
+            for error in form.name.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
           </div>
 
           <div class="mb-3">
-            <label for="phone" class="form-label">Phone Number</label>
-            <input
-              type="text"
-              class="form-control"
-              id="phone"
-              name="phone"
-              placeholder="Enter your phone number"
-              required
-            />
+            {{ form.phone.label(class="form-label") }} {{
+            form.phone(class="form-control", placeholder="Enter your phone
+            number") }} {% for error in form.phone.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
           </div>
 
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              name="password"
-              placeholder="Choose a password"
-              required
-            />
+            {{ form.password.label(class="form-label") }} {{
+            form.password(class="form-control", placeholder="Enter your
+            password") }} {% for error in form.password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
           </div>
 
-          <div class="d-grid">
-            <button type="submit" class="btn btn-success">Register</button>
-          </div>
+          <div class="d-grid">{{ form.submit(class="btn btn-success") }}</div>
         </form>
 
-        <div class="text-center">
+        <div class="text-center mt-3">
           Already have an account?
           <a href="{{ url_for('auth.login') }}">Login here</a>.
         </div>
