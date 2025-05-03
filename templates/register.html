@@ -10,7 +10,7 @@ block content %}
         <div class="alert alert-danger">{{ error_message }}</div>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('register_page') }}">
+        <form method="POST" action="{{ url_for('auth.register') }}">
           <div class="mb-3">
             <label for="name" class="form-label">Full Name</label>
             <input
@@ -54,7 +54,7 @@ block content %}
 
         <div class="text-center">
           Already have an account?
-          <a href="{{ url_for('login_page') }}">Login here</a>.
+          <a href="{{ url_for('auth.login') }}">Login here</a>.
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ block content %}
         </div>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('login_page') }}">
+        <form method="POST" action="{{ url_for('auth.login') }}">
           <div class="mb-3">
             <label for="phone" class="form-label">Phone Number</label>
             <input
@@ -50,7 +50,7 @@ block content %}
 
         <div class="text-center mt-3">
           Don't have an account?
-          <a href="{{ url_for('register_page') }}">Register here</a>.
+          <a href="{{ url_for('auth.register') }}">Register here</a>.
         </div>
       </div>
     </div>

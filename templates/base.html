@@ -75,13 +75,17 @@
       <div class="text-start">
         {% if current_user.is_authenticated %} Logged in as {{ current_user.name
         }}
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm"
+        <a
+          href="{{ url_for('auth.logout') }}"
+          class="btn btn-outline-danger btn-sm"
           >Logout</a
         >
-        <a href="{{ url_for('cart.view_cart') }}">View Cart</a>
+        <a class="btn btn-primary" href="{{ url_for('cart.view_cart') }}"
+          >View Cart</a
+        >
         {% else %}
         <a
-          href="{{ url_for('login_page') }}"
+          href="{{ url_for('auth.login') }}"
           class="btn btn-outline-primary btn-sm me-2"
           >Login</a
         >
