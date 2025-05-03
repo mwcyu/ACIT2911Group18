@@ -67,9 +67,20 @@
                   {{ category.name }}
                 </a>
               </li>
+
               {% endfor %}
             </ul>
           </li>
+          {% if current_user.is_authenticated and current_user.is_admin %}
+          <li class="nav-item">
+            <a
+              href="{{ url_for('admin.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}"
+            >
+              Admin
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </header>
       <div class="text-start">
@@ -80,7 +91,7 @@
           class="btn btn-outline-danger btn-sm"
           >Logout</a
         >
-        <a class="btn btn-primary" href="{{ url_for('cart.view_cart') }}"
+        <a class="btn btn-primary btn-sm" href="{{ url_for('cart.view_cart') }}"
           >View Cart</a
         >
         {% else %}

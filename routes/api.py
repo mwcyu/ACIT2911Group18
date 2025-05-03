@@ -149,6 +149,28 @@ def customers_api():
     return jsonify([customer.to_json() for customer in customers])
 
 
+@api_bp.route("/customers/is_admin", methods=["POST"])
+def make_admin_api():
+    data = request.get_json()
+    
+    """
+    {
+        "toggle_admin_for": 1
+    }
+    """
+    
+    stmt = db.select(Customer).where(Customer.id == data["toggle_admin_for"])
+    customer = db.session.execute(stmt).scalar()
+    
+    if customer.is_admin:
+        customer.is_admin = False
+    else:
+        customer.is_admin = True
+        
+    db.session.commit()
+    
+    return jsonify(customer.to_json())
+
 @api_bp.route("/categories")
 def categories_api():
     stmt = db.select(Category).where(Category.products.any(Product.price > 10))

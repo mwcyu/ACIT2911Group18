@@ -19,6 +19,8 @@ class Customer(db.Model, UserMixin):
     
     password = db.mapped_column(db.String, nullable=False)
     
+    is_admin = db.mapped_column(db.Boolean, default=False)
+    
     orders = db.relationship("Order", back_populates="customer")
 
     def __repr__(self):
@@ -37,7 +39,8 @@ class Customer(db.Model, UserMixin):
             "orders": {
                 "completed_order" : [order.to_json() for order in completed_orders],
                 "pending_orders" : [order.to_json() for order in pending_orders]
-            }
+            },
+            "admin": self.is_admin
         }
 
 
