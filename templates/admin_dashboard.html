@@ -1,5 +1,10 @@
-{% extends "base.html" %} {% block pagetitle %}Admin Dashboard{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+
+{% block pagetitle %}
+Admin Dashboard
+{% endblock %}
+
+{% block content %}
 <h2 class="my-3">Admin Dashboard</h2>
 
 <table class="table table-striped">
@@ -18,11 +23,13 @@ block content %}
       <td>{{ product.category.name }}</td>
       <td>{{ "✅" if product.in_season else "❌" }}</td>
       <td>
-        <a
-          href="{{ url_for('admin.toggle_season', product_id=product.id) }}"
-          class="btn btn-sm {{ 'btn-success' if not product.in_season else 'btn-danger' }}"
-        >
-          {% if product.in_season %}Remove{% else %}Add{% endif %}
+        <a href="{{ url_for('admin.toggle_season', product_id=product.id) }}"
+          class="btn btn-sm {{ 'btn-success' if not product.in_season else 'btn-danger' }}">
+          {% if product.in_season %}
+          Remove
+          {% else %}
+          Add
+          {% endif %}
         </a>
       </td>
     </tr>

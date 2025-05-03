@@ -69,4 +69,5 @@ def dashboard_page():
 
 # Run the application in debug mode on port 8888
 if __name__ == "__main__":
-    app.run(debug=True, port=8888)
+    app.run(debug=True,
+            port=8888)
