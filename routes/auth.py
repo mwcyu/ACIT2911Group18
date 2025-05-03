@@ -39,6 +39,7 @@ def register():
     if request.method == "POST":
         name = form.name.data.strip()
         phone = form.phone.data.strip()
+        email = form.email.data.strip()
         password = form.password.data.strip()
 
         stmt = db.select(Customer).where(Customer.phone == phone)
@@ -48,7 +49,7 @@ def register():
             flash("This phone number already has an account", "warning")
             return render_template("register.html", form=form)
 
-        new_customer = Customer(name=name, phone=phone, password=password)
+        new_customer = Customer(name=name, phone=phone, email=email, password=password)
         db.session.add(new_customer)
         db.session.commit()
         
