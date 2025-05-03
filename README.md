@@ -16,3 +16,5 @@ CSRF stands for Cross-Site Request Forgery.
 It’s a type of web security vulnerability where a malicious website tricks a user into submitting a request to another website where they're already authenticated. If the victim is logged in (e.g. to your Flask app), the malicious request could do something harmful — like submit a form or change account details — without the user's permission.
 
 6. I added forget password, reset password
+
+7. Added password field to register
