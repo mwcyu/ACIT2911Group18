@@ -16,8 +16,11 @@ class Customer(db.Model, UserMixin):
     id = db.mapped_column(db.Integer, primary_key=True)
     name = db.mapped_column(db.String)
     phone = db.mapped_column(db.String, unique=True)
+    email = db.mapped_column(db.String, unique=True, nullable=False)
     
     password = db.mapped_column(db.String, nullable=False)
+    
+    is_admin = db.mapped_column(db.Boolean, default=False)
     
     orders = db.relationship("Order", back_populates="customer")
 
@@ -37,7 +40,8 @@ class Customer(db.Model, UserMixin):
             "orders": {
                 "completed_order" : [order.to_json() for order in completed_orders],
                 "pending_orders" : [order.to_json() for order in pending_orders]
-            }
+            },
+            "admin": self.is_admin
         }
 
 

@@ -36,5 +36,6 @@ def all_products_page():
 
 @products_bp.route("/<int:id>")
 def individual_product_page(id):
-    product = db.get_or_404(Product, id)
+    stmt = db.select(Product).where(Product.id == id)
+    product = db.session.execute(stmt).scalar_one_or_none()
     return render_template("single_product.html", product=product)
