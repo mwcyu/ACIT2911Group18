@@ -6,7 +6,7 @@ from pathlib import Path  # File path management
 
 # Import database and models
 from db import db  # SQLAlchemy database instance
-from models import Customer, Category  # Database models for Customer and Category
+from models import Customer, Category, Product # Database models for Customer and Category
 
 # Import blueprints for modular route handling
 from routes import (
@@ -56,7 +56,11 @@ def home_page():
     stmt = db.select(Category)
     categories = db.session.execute(stmt).scalars()
     # Render the base.html template with categories and the current user
-    return render_template("base.html", categories=categories, current_user=current_user)
+    
+    stmt2 = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt2).scalars()
+    
+    return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
 # Define the dashboard page route (requires login)
 @app.route("/dashboard")
