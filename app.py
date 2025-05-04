@@ -60,6 +60,18 @@ def home_page():
     stmt2 = db.select(Product).where(Product.in_season == True)
     products = db.session.execute(stmt2).scalars()
     
+    return render_template("base.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/home")
+def home_page2():
+    # Query all categories from the database
+    stmt = db.select(Category)
+    categories = db.session.execute(stmt).scalars()
+    # Render the base.html template with categories and the current user
+    
+    stmt2 = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt2).scalars()
+    
     return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
 # Define the dashboard page route (requires login)
