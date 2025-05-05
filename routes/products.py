@@ -32,3 +32,10 @@ def all_products_page():
                            products=products, 
                            sort_by=sort, 
                            sort_order=sort_order)
+
+
+@products_bp.route("/<int:id>")
+def individual_product_page(id):
+    stmt = db.select(Product).where(Product.id == id)
+    product = db.session.execute(stmt).scalar_one_or_none()
+    return render_template("single_product.html", product=product)

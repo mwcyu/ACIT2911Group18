@@ -1,7 +1,35 @@
-<!-- <h3>My name is {{ name }}</h3> -->
+{% extends "base.html" %}
+{% block pagetitle %}Home{% endblock %}
+{% block content %}
 
-<ul> 
-    {% for element in my_list %} 
-<li>List element: {{ element }}</p> 
-    {% endfor %} 
-</ul>
+<h2 class="my-4">Featured Seasonal Products</h2>
+
+{% if products %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+    <div class="col">
+        <div class="card h-100">
+            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body">
+                <a href="{{ url_for('products.individual_product_page',id=product.id)}}">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                </a>
+                <p class="card-text">
+                    <strong>Price:</strong> ${{ product.price }}<br />
+                    <strong>Available:</strong> {{ product.available }}
+                </p>
+            </div>
+            {% if product.category %}
+            <div class="card-footer text-muted">
+                Category: {{ product.category.name }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">There are no seasonal products available right now. Please check back later!</p>
+{% endif %}
+
+{% endblock %}

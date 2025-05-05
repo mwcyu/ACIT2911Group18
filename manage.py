@@ -19,6 +19,10 @@ def drop_tables():
     db.drop_all()
 
 
+def str_to_bool(val):
+    return str(val).strip().lower() == "true"
+
+
 def csvReader(filename, klass):
     with open(filename, "r") as file:
         data = csv.DictReader(file)
@@ -30,6 +34,11 @@ def csvReader(filename, klass):
                     db.session.add(category_obj)
                 else:
                     category_obj = possible_category
+                    
+                item["price"] = float(item["price"])
+                item["available"] = int(item["available"])
+                item["seasonal"] = str_to_bool(item.get("seasonal", False))
+                item["in_season"] = str_to_bool(item.get("in_season", False))
                 item["category"] = category_obj
                 db.session.add(klass(**item))
             else:
