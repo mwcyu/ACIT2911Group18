@@ -18,7 +18,7 @@
         {% for order in orders %}
         <tr>
             <th>
-                <a href="{{ url_for('single_order_page', order_id=order.id)}}">{{ order.id }}</a>
+                <a href="{{ url_for('orders.single_order_page', order_id=order.id)}}">{{ order.id }}</a>
             </th>
             <td>
                 {{ order.created }}

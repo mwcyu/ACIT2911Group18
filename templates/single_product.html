@@ -1,0 +1,35 @@
+<!-- templates/single_products.html -->
+{% extends "base.html" %}
+
+{% block pagetitle %}
+{{ product.name }} - Product Details
+{% endblock %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+
+<img src="{{ url_for('static', filename='images/' ~ (product.image_filename or 'placeholder.jpg')) }}"
+  alt="Image of {{ product.name }}" class="img-fluid mb-3" style="max-height: 300px;">
+
+<p><strong>Price:</strong> ${{ "%.2f"|format(product.price) }}</p>
+
+<p><strong>Available:</strong>
+  {% if product.available %}
+  In Stock
+  {% else %}
+  Out of Stock
+  {% endif %}
+</p>
+
+{% if product.category %}
+<p><strong>Category:</strong> {{ product.category.name }}</p>
+{% endif %}
+
+{% if product.description %}
+<p><strong>Description:</strong> {{ product.description }}</p>
+{% else %}
+<p><em>No description available.</em></p>
+{% endif %}
+
+<a href="{{ url_for('products.all_products_page') }}" class="btn btn-secondary mt-3">Back to all products</a>
+{% endblock %}
