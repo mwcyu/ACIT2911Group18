@@ -6,14 +6,19 @@ content %}
 <ul class="list-group">
   {% for order in orders %}
   <li class="list-group-item mb-3">
-    <strong>Order ID:</strong> {{ order.id }}<br />
-    <strong>Created:</strong> {{ order.created.strftime("%Y-%m-%d %H:%M") }}<br />
+
+    <strong>Order ID:</strong> <a href="{{ url_for('orders.single_order_page', order_id=order.id)}}">
+      {{ order.id}}</a><br />
+    <strong>Created:</strong> {{ order.created.strftime("%Y-%m-%d %H:%M") }}
+    <br />
 
     {% if order.completed %}
-    <strong>Status:</strong> Completed on {{ order.completed.strftime("%Y-%m-%d
-    %H:%M") }}<br />
-    <strong>Final Amount:</strong> ${{ order.amount }} {% else %}
-    <strong>Status:</strong> Pending<br />
+    <strong>Status:</strong> Completed on {{ order.completed.strftime("%Y-%m-%d %H:%M") }}
+    <br />
+    <strong>Final Amount:</strong> ${{ order.amount }}
+    {% else %}
+    <strong>Status:</strong> Pending
+    <br />
     <strong>Estimated Total:</strong> ${{ order.estimate() }} {% endif %}
 
     <br /><strong>Products:</strong>

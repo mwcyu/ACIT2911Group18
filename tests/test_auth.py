@@ -1,7 +1,37 @@
+from flask import session
+
 def test_login_page_loads(client):
     res = client.get("/auth/login")
     assert res.status_code == 200
     assert b"Login" in res.data
+
+
+def test_access_session(client):
+    with client:
+        client.post("/auth/login", data=
+                    {"phone":"778-159-1152",
+                        "password":"sun789"
+                        })
+        assert session["_user_id"] == "2"
+
+# def test_modify_session(client):
+#     with client.session_transaction() as session:
+#         # set a user id without going through the login route
+#         session["_user_id"] = "1"
+
+#     # session is saved now
+
+#     response = client.get("/")
+#     assert response.json["name"] == ""
+    
+
+def test_request_example(client):
+    res = client.get("/")
+    
+    # print(res.get_data(as_text=True))  # Returns decoded string
+
+    
+    assert b"Store" in res.data
 
 
 # def test_register_page_loads(client):

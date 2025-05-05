@@ -1,4 +1,4 @@
-from flask import session, redirect, url_for, Blueprint, render_template
+from flask import session, redirect, url_for, Blueprint, render_template, request
 from flask_login import login_required, current_user
 from models import Product, ProductOrder, Order
 from db import db
@@ -16,7 +16,7 @@ def add_to_cart(id):
     
     session["cart"] = cart
     
-    return redirect(url_for("cart.view_cart"))
+    return redirect(request.referrer)
 
 @cart_bp.route('/checkout')
 @login_required

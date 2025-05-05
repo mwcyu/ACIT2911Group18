@@ -24,6 +24,7 @@ def login():
         
         if customer and customer.password == password:
             login_user(customer)
+            
             print("---- SESSION DATA ----")
             print(dict(session))
             return redirect(url_for("dashboard_page"))
@@ -62,6 +63,7 @@ def register():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    session.clear()
     logout_user()
     print(dict(session))
     return redirect(url_for("home_page"))
