@@ -3,42 +3,66 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load from .env
 
-class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "default_key")
+class BaseConfig:
+    """Base configuration settings"""
+    # Flask
+    SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key-change-in-production")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Mail config
+    # Security
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", "default-salt-change-in-production")
+    SECURITY_REGISTERABLE = True
+    SECURITY_SEND_REGISTER_EMAIL = False
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SECURE = True
+    REMEMBER_COOKIE_HTTPONLY = True
+    
+    # Mail
     MAIL_SERVER = os.getenv("MAIL_SERVER", "localhost")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 25))
     MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "false").lower() == "true"
     MAIL_USERNAME = os.getenv("MAIL_USERNAME")
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.getenv("MAIL_USERNAME")  # Optional
-    OAUTH2_PROVIDERS = {
-    # Google OAuth 2.0 documentation:
-    # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
-    'google': {
-        'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
-        'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
-        'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
-        'token_url': 'https://accounts.google.com/o/oauth2/token',
-        'userinfo': {
-            'url': 'https://www.googleapis.com/oauth2/v3/userinfo',
-            'email': lambda json: json['email'],
-        },
-        'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
-    },
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
+    
+    # OAuth
+    GITHUB_OAUTH_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+    GITHUB_OAUTH_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+    GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
-    # GitHub OAuth 2.0 documentation:
-    # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
-    'github': {
-        'client_id': os.environ.get('GITHUB_CLIENT_ID'),
-        'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
-        'authorize_url': 'https://github.com/login/oauth/authorize',
-        'token_url': 'https://github.com/login/oauth/access_token',
-        'userinfo': {
-            'url': 'https://api.github.com/user/emails',
-            'email': lambda json: json[0]['email'],
-        },
-        'scopes': ['user:email'],
-    },
+class DevelopmentConfig(BaseConfig):
+    """Development configuration settings"""
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///project1.db"
+    SESSION_COOKIE_SECURE = False
+    REMEMBER_COOKIE_SECURE = False
+    
+class TestingConfig(BaseConfig):
+    """Testing configuration settings"""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    WTF_CSRF_ENABLED = False
+    
+class ProductionConfig(BaseConfig):
+    """Production configuration settings"""
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///project1.db")
+    
+    # Production security settings
+    SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
+    
+    # Logging
+    LOG_LEVEL = "INFO"
+
+# Configure based on environment
+config = {
+    "development": DevelopmentConfig,
+    "testing": TestingConfig,
+    "production": ProductionConfig,
+    "default": DevelopmentConfig
 }
+
+Config = config[os.getenv("FLASK_ENV", "default")]

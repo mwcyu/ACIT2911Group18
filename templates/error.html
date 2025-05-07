@@ -1,12 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error Page</title>
 </head>
+
 <body>
-    <h1>Error</h1>
-    <p>{{message}}</p>
+    {% extends "base.html" %}
+
+    {% block pagetitle %}Error {{ code|default('') }} - Store{% endblock %}
+
+    {% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            Error {{ code|default('') }}
+                            {% if code == 404 %}
+                            - Page Not Found
+                            {% elif code == 403 %}
+                            - Access Forbidden
+                            {% elif code == 500 %}
+                            - Internal Server Error
+                            {% endif %}
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            {% if code == 404 %}
+                            <i class="bi bi-question-circle" style="font-size: 3rem;"></i>
+                            {% elif code == 403 %}
+                            <i class="bi bi-shield-lock" style="font-size: 3rem;"></i>
+                            {% elif code == 500 %}
+                            <i class="bi bi-exclamation-triangle" style="font-size: 3rem;"></i>
+                            {% endif %}
+                        </div>
+
+                        <p class="lead text-center">{{ message|default('An unexpected error occurred.') }}</p>
+
+                        {% if code == 404 %}
+                        <p class="text-center">The page you're looking for doesn't exist or has been moved.</p>
+                        {% elif code == 403 %}
+                        <p class="text-center">You don't have permission to access this resource.</p>
+                        {% elif code == 500 %}
+                        <p class="text-center">Our team has been notified. Please try again later.</p>
+                        {% endif %}
+
+                        <hr>
+
+                        <div class="text-center">
+                            <a href="{{ url_for('home_page') }}" class="btn btn-primary me-2">
+                                <i class="bi bi-house-door"></i> Return Home
+                            </a>
+                            <button onclick="history.back()" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Go Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if config.DEBUG and error_info %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Debug Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0"><code>{{ error_info }}</code></pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
 </body>
+
 </html>

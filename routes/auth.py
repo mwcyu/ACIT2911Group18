@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, current_app, make_response
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_dance.contrib.github import github
 from forms import LoginForm, RegisterForm, ForgotPasswordForm, ResetPasswordForm
 from models import Customer
 from db import db
@@ -10,40 +11,55 @@ auth_bp = Blueprint("auth", __name__, template_folder="../templates")
 
 @auth_bp.route("/github")
 def github_oauth():
-    github = current_app.config['GITHUB_OAUTH_CLIENT']
-    return github.authorize_redirect(url_for('auth.github_callback', _external=True))
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+    return redirect(url_for("auth.github_callback"))
 
 
 @auth_bp.route("/callback/github")
 def github_callback():
-    github = current_app.config['GITHUB_OAUTH_CLIENT']
-    token = github.authorize_access_token()
-    resp = github.get('user')
-    profile = resp.json()
+    if not github.authorized:
+        flash("Failed to log in with GitHub.", "error")
+        return redirect(url_for("auth.login"))
 
-    stmt = db.select(Customer).where(Customer.github_id == str(profile['id']))
+    # Get user info from GitHub
+    resp = github.get("/user")
+    if not resp.ok:
+        flash("Failed to get user info from GitHub.", "error")
+        return redirect(url_for("auth.login"))
+
+    github_info = resp.json()
+    github_user_id = str(github_info["id"])
+
+    # Check if this GitHub user already exists in our database
+    stmt = db.select(Customer).where(Customer.github_id == github_user_id)
     customer = db.session.execute(stmt).scalar_one_or_none()
 
     if not customer:
-        email_resp = github.get('user/emails')
-        email_data = email_resp.json()
-        primary_email = next((e["email"] for e in email_data if e["primary"]), None)
+        # Get user's email from GitHub
+        email_resp = github.get("/user/emails")
+        if email_resp.ok:
+            emails = email_resp.json()
+            primary_email = next((e["email"] for e in emails if e["primary"]), None)
+        else:
+            primary_email = None
 
+        # Create new customer
         customer = Customer(
-            github_id=str(profile["id"]),
-            name=profile.get("login"),
+            github_id=github_user_id,
+            name=github_info.get("login"),
             email=primary_email
         )
         db.session.add(customer)
         db.session.commit()
 
+    # Log in the user
     login_user(customer)
+    
     # Store additional info in session
     session["customer_id"] = customer.id
     session["customer_name"] = customer.name
     session["cart"] = []  # Start empty cart or load from DB if needed
-    
-    print(session)
 
     return redirect(url_for('dashboard_page'))
 
