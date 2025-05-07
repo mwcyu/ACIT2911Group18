@@ -34,10 +34,6 @@ def create_app(config_class=None):
     init_login_manager(app)
     init_oauth(app)
     init_csrf(app)
-    
-    # Setup security and logging
-    init_security(app)
-    setup_logging(app)
 
     # Register blueprints
     app.register_blueprint(api_bp, url_prefix="/api")

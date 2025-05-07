@@ -1,5 +1,6 @@
 from flask import Blueprint, redirect, url_for, request, render_template, flash, abort
 from flask_login import login_required, current_user, fresh_login_required
+from functools import wraps
 from db import db
 from models import Product
 
@@ -7,6 +8,7 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 def admin_required(f):
     """Decorator to check if user is an admin"""
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if not getattr(current_user, "is_admin", False):
             flash("You don't have permission to access this page.", "danger")
