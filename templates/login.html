@@ -5,9 +5,9 @@
 {% block content %}
 <div class="row justify-content-center mt-5">
   <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h2 class="text-center">Login</h2>
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="text-center mb-4">Sign In</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -44,13 +44,19 @@
           </div>
         </form>
 
-        <div class="text-center mt-3">
+        <div class="text-center my-3">or</div>
+
+        <a href="{{ url_for('auth.github_oauth') }}" class="btn btn-outline-dark w-100 mb-3">
+          <i class="bi bi-github me-1"></i> Sign in with GitHub
+        </a>
+
+        <div class="text-center">
           <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">
             Forgot your password?
           </a>
         </div>
 
-        <div class="text-center mt-3">
+        <div class="text-center mt-2">
           Don't have an account?
           <a href="{{ url_for('auth.register') }}">Register here</a>.
         </div>

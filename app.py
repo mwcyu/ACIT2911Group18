@@ -3,7 +3,9 @@ from flask import Flask, render_template  # Flask framework and template renderi
 from flask_login import LoginManager, login_required, current_user  # User authentication and session management
 from flask_mail import Mail  # Email handling
 from pathlib import Path  # File path management
+import os
 
+from authlib.integrations.flask_client import OAuth
 # Import database and models
 from db import db  # SQLAlchemy database instance
 from models import Customer, Category, Product # Database models for Customer and Category
@@ -16,6 +18,7 @@ from routes import (
 
 # Initialize Flask app and configure settings
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
 app.config.from_object("config.Config")  # Load configuration from a config class
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"  # Set SQLite database URI
 app.instance_path = Path(".").resolve()  # Set the instance path to the current directory
@@ -48,6 +51,19 @@ app.register_blueprint(practice_bp, url_prefix="/practice")  # Practice-related 
 app.register_blueprint(cart_bp, url_prefix="/cart")  # Shopping cart routes
 app.register_blueprint(auth_bp, url_prefix="/auth")  # Authentication routes
 app.register_blueprint(admin_bp)  # Admin-related routes (no prefix)
+
+oauth = OAuth(app)
+github = oauth.register(
+    name='github',
+    client_id=os.getenv('GITHUB_CLIENT_ID'),
+    client_secret=os.getenv('GITHUB_CLIENT_SECRET'),
+    access_token_url='https://github.com/login/oauth/access_token',
+    authorize_url='https://github.com/login/oauth/authorize',
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user:email'},
+)
+
+app.config['GITHUB_OAUTH_CLIENT'] = github
 
 # Define the home page route
 @app.route("/")

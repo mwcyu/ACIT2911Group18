@@ -29,8 +29,6 @@ def test_request_example(client):
     res = client.get("/")
     
     # print(res.get_data(as_text=True))  # Returns decoded string
-
-    
     assert b"Store" in res.data
 
 

@@ -43,7 +43,7 @@ def checkout_cart():
                 product=product,
                 quantity=qty
             ))
-
+            
     db.session.commit()
     session.pop("cart", None)  # Clear cart after checkout
 

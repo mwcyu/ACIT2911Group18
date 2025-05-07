@@ -1,5 +1,6 @@
 from db import db
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from .order import Order
 
@@ -14,11 +15,12 @@ class Customer(db.Model, UserMixin):
     __tablename__ = "Customers"
 
     id = db.mapped_column(db.Integer, primary_key=True)
+    github_id = db.mapped_column(db.Integer, nullable=True, unique=True)
     name = db.mapped_column(db.String)
     phone = db.mapped_column(db.String, unique=True)
-    email = db.mapped_column(db.String, unique=True, nullable=False)
+    email = db.mapped_column(db.String, unique=True, nullable=True)
     
-    password = db.mapped_column(db.String, nullable=False)
+    password = db.mapped_column(db.String, nullable=True)
     
     is_admin = db.mapped_column(db.Boolean, default=False)
     
@@ -27,6 +29,12 @@ class Customer(db.Model, UserMixin):
     def __repr__(self):
         return f"{self.name} - {self.phone}"
     
+    
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
     
     def to_json(self):
         pending_orders = [order for order in self.orders if order.completed == None]
