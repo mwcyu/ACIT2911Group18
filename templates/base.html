@@ -7,78 +7,78 @@
 </head>
 
 <body>
-  <div class="container">
-    <header>
-      <nav class="navbar navbar-expand bg-body-tertiary rounded">
-        <div class="container-fluid">
-          <div class="collapse navbar-collapse d-lg-flex justify-content-center">
-            <a href="#" class="navbar-brand col-lg-3 justify-content-lg-start">MVP Team Store</a>
-            <ul class="nav nav-tabs nav-fill">
-              <li class="nav-item">
-                <a href="{{ url_for('home_page') }}"
-                  class="nav-link {% if request.endpoint == 'home_page' %}active{% endif %}">
-                  Home
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('customers.customers_detail') }}"
-                  class="nav-link {% if request.endpoint == 'customers.customers_detail' %}active{% endif %}">
-                  Customers
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('products.all_products_page') }}"
-                  class="nav-link {% if request.endpoint == 'products.all_products_page' %}active{% endif %}">
-                  Products
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('orders.orders_page') }}"
-                  class="nav-link {% if request.endpoint == 'orders.orders_page' %}active{% endif %}">
-                  Orders
-                </a>
-              </li>
-              <li class="nav-item d-flex">
-                <a href="{{ url_for('categories.categories_page') }}"
-                  class="nav-link {% if request.endpoint == 'categories.categories_page' %}active{% endif %}">
-                  Categories
-                </a>
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"></a>
-                <ul class="dropdown-menu">
-                  {% for category in categories %}
-                  <li>
-                    <!-- For each category, if you need an active class you might compare a parameter passed to the template -->
-                    <a class="dropdown-item {% if request.endpoint == 'category_detail' and request.view_args.name == category.name %}active{% endif %}"
-                      href="{{ url_for('categories.category_detail', name=category.name) }}">
-                      {{ category.name }}
-                    </a>
-                  </li>
-
-                  {% endfor %}
-                </ul>
-              </li>
-              {% if current_user.is_authenticated and current_user.is_admin %}
-              <li class="nav-item">
-                <a href="{{ url_for('admin.admin_dashboard') }}"
-                  class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
-                  Admin
-                </a>
-              </li>
-              {% endif %}
-            </ul>
-            <div class="d-lg-flex col-lg-3 justify-content-lg-end">
-              {% if current_user.is_authenticated %} Logged in as {{ current_user.name
-              }}
-              <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
-              <a class="btn btn-primary btn-sm" href="{{ url_for('cart.view_cart') }}">View Cart</a>
-              {% else %}
-              <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
-              {% endif %}
-            </div>
+  <header>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary rounded">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse d-lg-flex justify-content-center">
+          <a href="#" class="navbar-brand col-lg-3 justify-content-lg-start">MVP Team Store</a>
+          <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+              <a href="{{ url_for('home_page') }}"
+                class="nav-link {% if request.endpoint == 'home_page' %}active{% endif %}">
+                Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('customers.customers_detail') }}"
+                class="nav-link {% if request.endpoint == 'customers.customers_detail' %}active{% endif %}">
+                Customers
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('products.all_products_page') }}"
+                class="nav-link {% if request.endpoint == 'products.all_products_page' %}active{% endif %}">
+                Products
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('orders.orders_page') }}"
+                class="nav-link {% if request.endpoint == 'orders.orders_page' %}active{% endif %}">
+                Orders
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Categories
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                {% for category in categories %}
+                <li>
+                  <a class="dropdown-item {% if request.endpoint == 'category_detail' and request.view_args.name == category.name %}active{% endif %}"
+                    href="{{ url_for('categories.category_detail', name=category.name) }}">
+                    {{ category.name }}
+                  </a>
+                </li>
+                {% endfor %}
+              </ul>
+            </li>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <li class="nav-item">
+              <a href="{{ url_for('admin.admin_dashboard') }}"
+                class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+                Admin
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+          <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-primary btn-sm me-2" href="{{ url_for('cart.view_cart') }}">View Cart</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
+            {% endif %}
           </div>
         </div>
-      </nav>
-    </header>
+      </div>
+    </nav>
+  </header>
+  <div>
+    <h1 class="me-4 text-end">{% if current_user.is_authenticated %}<span class="text-success">Logged in</span> as {{
+      current_user.name
+      }}
+      {% endif %}</h1>
     {% block content %}
     Hello
     {% endblock %}
