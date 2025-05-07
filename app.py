@@ -41,6 +41,12 @@ def load_user(user_id):
     stmt = db.select(Customer).where(Customer.id == user_id)
     return db.session.execute(stmt).scalar_one_or_none()
 
+@app.context_processor
+def inject_categories():
+    stmt = db.select(Category)
+    categories = db.session.execute(stmt).scalars()
+    return dict(categories=categories)
+
 # Register blueprints to organize routes into modules
 app.register_blueprint(api_bp, url_prefix="/api")  # API routes
 app.register_blueprint(products_bp, url_prefix="/products")  # Product-related routes
@@ -68,27 +74,15 @@ app.config['GITHUB_OAUTH_CLIENT'] = github
 # Define the home page route
 @app.route("/")
 def home_page():
-    # Query all categories from the database
-    stmt = db.select(Category)
-    categories = db.session.execute(stmt).scalars()
-    # Render the base.html template with categories and the current user
-    
-    stmt2 = db.select(Product).where(Product.in_season == True)
-    products = db.session.execute(stmt2).scalars()
-    
-    return render_template("base.html", categories=categories, current_user=current_user, products=products)
+    stmt = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt).scalars()
+    return render_template("base.html", current_user=current_user, products=products)
 
 @app.route("/home")
 def home_page2():
-    # Query all categories from the database
-    stmt = db.select(Category)
-    categories = db.session.execute(stmt).scalars()
-    # Render the base.html template with categories and the current user
-    
-    stmt2 = db.select(Product).where(Product.in_season == True)
-    products = db.session.execute(stmt2).scalars()
-    
-    return render_template("home.html", categories=categories, current_user=current_user, products=products)
+    stmt = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt).scalars()
+    return render_template("home.html", current_user=current_user, products=products)
 
 # Define the dashboard page route (requires login)
 @app.route("/dashboard")

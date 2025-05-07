@@ -10,10 +10,7 @@ categories_bp = Blueprint("categories", __name__)
 def categories_page():
     stmt = db.select(Category)
     data = db.session.execute(stmt).scalars()
-    stmt2 = db.select(Category)
-    data2 = db.session.execute(stmt2).scalars()
-
-    return render_template("categories.html", data = data, categories = data2)
+    return render_template("categories.html", data=data)
 
 
 @categories_bp.route("/<string:name>")
@@ -24,5 +21,4 @@ def category_detail(name):
     stmt2 = db.select(Category).where(Category.name == name)
     data = db.session.execute(stmt2).scalars().first()
 
-
-    return render_template("category.html", products = products, category=data)
+    return render_template("category.html", products=products, category=data)
