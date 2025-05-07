@@ -1,114 +1,105 @@
-from flask import Flask, render_template, redirect, url_for, request, session
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from models import Customer,Category,Product,Order,ProductOrder
-from pathlib import Path
-from db import db
-from routes import api_bp, products_bp, customers_bp, categories_bp, orders_bp, practice_bp
+# Import necessary modules and extensions
+from flask import Flask, render_template  # Flask framework and template rendering
+from flask_login import LoginManager, login_required, current_user  # User authentication and session management
+from flask_mail import Mail  # Email handling
+from pathlib import Path  # File path management
+import os
 
-app = Flask (__name__)
-app.config["SECRET_KEY"] = '13922688c391dba2f50e73a51598e97f1bfb99d739339cc63e87138b171dab1c'
+from authlib.integrations.flask_client import OAuth
+# Import database and models
+from db import db  # SQLAlchemy database instance
+from models import Customer, Category, Product # Database models for Customer and Category
 
-# This will make Flask use a 'sqlite' database with the filename provided 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"
- # This will make Flask store the database file in the path provided 
-app.instance_path = Path(".").resolve()
+# Import blueprints for modular route handling
+from routes import (
+    api_bp, products_bp, customers_bp, categories_bp,
+    orders_bp, practice_bp, cart_bp, auth_bp, admin_bp
+)
 
+# Initialize Flask app and configure settings
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+app.config.from_object("config.Config")  # Load configuration from a config class
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"  # Set SQLite database URI
+app.instance_path = Path(".").resolve()  # Set the instance path to the current directory
+
+# Initialize Flask-Mail for email functionality
+mail = Mail(app)
+
+# Initialize the database with the Flask app
 db.init_app(app)
 
-# registering a blueprint
-app.register_blueprint(api_bp, url_prefix="/api")
-
-# Blueprint for HTML
-app.register_blueprint(products_bp, url_prefix="/products")
-app.register_blueprint(orders_bp, url_prefix="/orders")
-app.register_blueprint(categories_bp, url_prefix="/categories")
-app.register_blueprint(customers_bp, url_prefix="/customers")
-app.register_blueprint(practice_bp,url_prefix="/practice")
-
-
-# Adjust to your needs / liking. Most likely, you want to use "." for your instance path. This is up to you. You may also use "data"
-
-# flask_login setup
+# Initialize Flask-Login for user authentication
 login_manager = LoginManager()
-login_manager.login_view = "login_page"
-login_manager.init_app(app)
+login_manager.login_view = "auth.login"  # Redirect unauthenticated users to the login page
+login_manager.init_app(app)  # Attach the login manager to the Flask app
 
+# Define a user loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
+    # Query the database to load the user by their ID
     stmt = db.select(Customer).where(Customer.id == user_id)
-    customer = db.session.execute(stmt).scalar()
-    return customer
+    return db.session.execute(stmt).scalar_one_or_none()
 
+# Register blueprints to organize routes into modules
+app.register_blueprint(api_bp, url_prefix="/api")  # API routes
+app.register_blueprint(products_bp, url_prefix="/products")  # Product-related routes
+app.register_blueprint(orders_bp, url_prefix="/orders")  # Order-related routes
+app.register_blueprint(categories_bp, url_prefix="/categories")  # Category-related routes
+app.register_blueprint(customers_bp, url_prefix="/customers")  # Customer-related routes
+app.register_blueprint(practice_bp, url_prefix="/practice")  # Practice-related routes
+app.register_blueprint(cart_bp, url_prefix="/cart")  # Shopping cart routes
+app.register_blueprint(auth_bp, url_prefix="/auth")  # Authentication routes
+app.register_blueprint(admin_bp)  # Admin-related routes (no prefix)
 
+oauth = OAuth(app)
+github = oauth.register(
+    name='github',
+    client_id=os.getenv('GITHUB_CLIENT_ID'),
+    client_secret=os.getenv('GITHUB_CLIENT_SECRET'),
+    access_token_url='https://github.com/login/oauth/access_token',
+    authorize_url='https://github.com/login/oauth/authorize',
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user:email'},
+)
+
+app.config['GITHUB_OAUTH_CLIENT'] = github
+
+# Define the home page route
 @app.route("/")
 def home_page():
+    # Query all categories from the database
     stmt = db.select(Category)
     categories = db.session.execute(stmt).scalars()
-    return render_template("base.html", categories=categories, current_user=current_user)
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login_page():
-    error_message = None
-    if request.method == "POST":
-        phone = request.form.get("phone", '').strip()
-        password = request.form.get("password", '').strip()
-
-        stmt = db.select(Customer).where(Customer.phone == phone)
-        customer = db.session.execute(stmt).scalar_one_or_none()
-
-        if customer and customer.password == password:
-            login_user(customer)
-
-            print("---- SESSION DATA ----")
-            print(dict(session))
-            print("----------------------")
-
-            return redirect(url_for('dashboard_page'))
-        else:
-            error_message = "Invalid phone number or password. Please try again."
-
-    return render_template("login.html", error_message=error_message)
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register_page():
-    if request.method == "POST":
-        name = request.form.get('name').strip()
-        phone = request.form.get('phone').strip()
-        password = request.form.get('password').strip()
-
-        stmt = db.select(Customer).where(Customer.phone == phone)
-        customer = db.session.execute(stmt).scalar()
-
-        if customer:
-            return render_template("register.html", error_message="This phone number already has an account")
-
-        new_customer = Customer(name=name, phone=phone, password=password)
-        db.session.add(new_customer)
-        db.session.commit()
-
-        return redirect(url_for('login_page'))
-
-    return render_template("register.html")
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
+    # Render the base.html template with categories and the current user
     
-    print(dict(session))
+    stmt2 = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt2).scalars()
     
-    return redirect(url_for("home_page"))
+    return render_template("base.html", categories=categories, current_user=current_user, products=products)
 
+@app.route("/home")
+def home_page2():
+    # Query all categories from the database
+    stmt = db.select(Category)
+    categories = db.session.execute(stmt).scalars()
+    # Render the base.html template with categories and the current user
+    
+    stmt2 = db.select(Product).where(Product.in_season == True)
+    products = db.session.execute(stmt2).scalars()
+    
+    return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
+# Define the dashboard page route (requires login)
 @app.route("/dashboard")
 @login_required
 def dashboard_page():
-    print(current_user.name)
+    # Retrieve the current user's orders
     orders = current_user.orders
+    # Render the dashboard.html template with the user's orders
     return render_template("dashboard.html", orders=orders)
 
-
+# Run the application in debug mode on port 8888
 if __name__ == "__main__":
-    app.run(debug=True, port=8888)
+    app.run(debug=True,
+            port=8888)

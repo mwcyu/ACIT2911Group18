@@ -8,6 +8,8 @@ class Product(db.Model):
     price = db.mapped_column(db.DECIMAL(10, 2))
     available = db.mapped_column(db.Integer, default=0)
     category_id = db.mapped_column(db.Integer, db.ForeignKey("Categories.id"))
+    seasonal = db.mapped_column(db.Boolean, default=False)
+    in_season = db.mapped_column(db.Boolean, default=False)
     
     category = db.relationship("Category", back_populates="products")
     order = db.relationship("ProductOrder", back_populates="product")
@@ -25,5 +27,6 @@ class Product(db.Model):
             "price": self.price,
             "inventory": self.available,
             "category_id": self.category_id,
-            "category": self.category.name
+            "category": self.category.name,
+            "seasonal": self.seasonal
         }
