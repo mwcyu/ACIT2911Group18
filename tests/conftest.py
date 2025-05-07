@@ -9,7 +9,7 @@ def app():
         "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
         "WTF_CSRF_ENABLED": False,  # If using Flask-WTF
     })
-
+    
     yield flask_app
 
 @pytest.fixture
