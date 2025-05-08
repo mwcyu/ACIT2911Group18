@@ -17,4 +17,25 @@ It’s a type of web security vulnerability where a malicious website tricks a u
 
 6. I added forget password, reset password
 
-7. Added password field to register
+May 7th
+
+1. Added Testing for cart and auth (login)
+2. Added Active Cart (Cusotmer can have multiple pending orders, but only 1 is their active cart)
+3. Added Cart Template
+4. Add and remove items from cart
+5. Change product quantities from cart
+6. Generate order under a budget (Routes and templates)
+7. Added Dark mode toggle, saved as cookies
+
+Pytest made:
+
+1. add items to cart
+2. update cart item quantity
+3. remove cart item
+4. Generate Cart under budget
+
+Auth test:
+
+1. Correctly hash password in database
+2. Accessing Login page
+3. Test if you can log in to dashboard with the correct credentials

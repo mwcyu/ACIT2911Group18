@@ -1,35 +1,45 @@
-{% extends "base.html" %} {% block pagetitle %}Dashboard{% endblock %} {% block
-content %}
-<h2>Your Orders</h2>
+{% extends "base.html" %}
+{% block content %}
 
-{% if orders %}
-<ul class="list-group">
-  {% for order in orders %}
-  <li class="list-group-item mb-3">
+<div class="container my-4">
+  <h2 class="mb-4">📦 Order Summary</h2>
 
-    <strong>Order ID:</strong> <a href="{{ url_for('orders.single_order_page', order_id=order.id)}}">
-      {{ order.id}}</a><br />
-    <strong>Created:</strong> {{ order.created.strftime("%Y-%m-%d %H:%M") }}
-    <br />
+  {% if orders %}
+  <div class="list-group">
+    {% for order in orders %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>Order #{{ order.id }}</strong>
 
-    {% if order.completed %}
-    <strong>Status:</strong> Completed on {{ order.completed.strftime("%Y-%m-%d %H:%M") }}
-    <br />
-    <strong>Final Amount:</strong> ${{ order.amount }}
-    {% else %}
-    <strong>Status:</strong> Pending
-    <br />
-    <strong>Estimated Total:</strong> ${{ order.estimate() }} {% endif %}
+          {% if order.id == current_user.active_cart_id and not order.completed %}
+          <span class="badge bg-primary ms-2">✅ Active Cart</span>
+          {% endif %}
+        </div>
 
-    <br /><strong>Products:</strong>
-    <ul>
-      {% for item in order.items %}
-      <li>{{ item.product.name }} x{{ item.quantity }}</li>
-      {% endfor %}
-    </ul>
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>You have no orders yet.</p>
-{% endif %} {% endblock %}
+        {% if order.completed %}
+        <span class="badge bg-success">Completed</span>
+        {% else %}
+        {% if order.id != current_user.active_cart_id %}
+        <a href="{{ url_for('cart.switch_pending_order', order_id=order.id) }}"
+          class="btn btn-sm btn-outline-secondary">Switch to This</a>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <small class="text-muted">Created: {{ order.created.strftime('%Y-%m-%d %H:%M') }}</small>
+
+      <ul class="mt-2">
+        {% for item in order.items %}
+        <li>{{ item.quantity }} x {{ item.product.name }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">You don't have any orders yet.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

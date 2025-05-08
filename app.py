@@ -68,7 +68,7 @@ app.config['GITHUB_OAUTH_CLIENT'] = github
 def home_page():
     categories = db.session.execute(db.select(Category)).scalars()
     products = db.session.execute(db.select(Product).where(Product.in_season == True)).scalars()
-    return render_template("base.html", categories=categories, current_user=current_user, products=products)
+    return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
 @app.route("/dashboard")
 @login_required

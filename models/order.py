@@ -36,6 +36,9 @@ class Order(db.Model):
             product["product"].available -= product["removing"]
         self.completed = db.func.now()
         self.amount = self.estimate()
+        
+        if self.customer.active_cart_id == self.id:
+            self.customer.active_cart_id = None
 
     def to_json(self):
         completed = False

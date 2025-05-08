@@ -38,7 +38,9 @@ def github_callback():
 
     session["customer_id"] = customer.id
     session["customer_name"] = customer.name
-    session.setdefault("cart", [])
+    session.setdefault("cart", {})
+    
+    print(session)
 
     return redirect(url_for("dashboard_page"))
 
@@ -53,13 +55,15 @@ def login():
         stmt = db.select(Customer).where(Customer.phone == phone)
         customer = db.session.execute(stmt).scalar_one_or_none()
         
-        if customer and customer.password == password:
+        if customer and customer.check_password(password):
             login_user(customer)
 
             # Store custom session data
             session["customer_id"] = customer.id
             session["customer_name"] = customer.name
-            session.setdefault("cart", [])  # preserve cart if already exists
+            session.setdefault("cart", {})
+            
+            print(session)
 
             return redirect(url_for("dashboard_page"))
         else:
@@ -92,7 +96,9 @@ def register():
 
         session["customer_id"] = new_customer.id
         session["customer_name"] = new_customer.name
-        session["cart"] = []
+        session.setdefault("cart", {})
+        
+        print(session)
 
         return redirect(url_for('dashboard_page'))
 
@@ -104,11 +110,8 @@ def register():
 def logout():
     logout_user()
     session.clear()
+    return redirect(url_for("home_page"))
 
-    response = make_response(redirect(url_for("home_page")))
-    response.set_cookie("session", "", expires=0)
-    response.set_cookie("cart", "", expires=0)
-    return response
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
