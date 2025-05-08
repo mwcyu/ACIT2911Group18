@@ -3,7 +3,7 @@ from flask import (
     render_template, request, flash, abort
 )
 from flask_login import login_required, current_user
-from models import Product, ProductOrder, Order
+from models import Product, ProductOrder, Order, Customer
 from db import db
 import random
 
@@ -170,11 +170,13 @@ def generate_cart():
 
             selected_items.append((product, quantity))
 
-        order = get_or_create_pending_order(current_user)
-        order.items.clear()
-
+        cart = Order(customer=current_user)
+        db.session.add(cart)
+        db.session.flush()
+        
+        current_user.active_cart_id = cart.id
         for product, quantity in selected_items:
-            db.session.add(ProductOrder(product_id=product.id, quantity=quantity, order_id=order.id))
+            db.session.add(ProductOrder(product_id=product.id, order_id=cart.id, quantity=quantity))
 
         db.session.commit()
         flash("Generated a cart under your budget.", "success")
