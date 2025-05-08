@@ -100,4 +100,10 @@ def test_switch_order(logged_in_client, test_user):
     db.session.commit()
 
     res = logged_in_client.get(f"/cart/switch/{order.id}", follow_redirects=True)
-    assert b"Switched to order" in res.data
+    assert test_user.active_cart_id == order.id
+    
+    order2 = Order(customer=test_user)
+    db.session.add(order2)
+    db.session.commit()
+    
+    assert test_user.active_cart_id != order2.id
