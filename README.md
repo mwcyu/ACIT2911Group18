@@ -1,3 +1,11 @@
+Setup:
+
+```python
+python -m venv venv
+source venv/bin/activate  # or Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
 May 2nd
 
 Marco Yu:

@@ -29,6 +29,10 @@ def test_add_to_cart(logged_in_client, test_user, test_category):
     item = next((i for i in order.items if i.product_id == product.id), None)
     assert item is not None, "Item was not added to order"
     assert item.quantity == 1
+    
+    # Checking if apple is in cart view
+    cart_res = logged_in_client.get("/cart/")
+    assert b"Apple" in cart_res.data
 
 
 def test_update_cart_item(logged_in_client, test_user, test_category):
@@ -42,8 +46,12 @@ def test_update_cart_item(logged_in_client, test_user, test_category):
 
     res = logged_in_client.post(f"/cart/update/{product.id}", data={"quantity": 3}, follow_redirects=True)
     
+    # Assert: HTTP 200 OK
+    assert res.status_code == 200
+    
     # finds the exact entry and verifies it
     assert db.session.get(ProductOrder, (product.id, order.id)).quantity == 3
+    assert b"Banana" in res.data
 
 
 def test_remove_cart_item(logged_in_client, test_user, test_category):
@@ -59,7 +67,9 @@ def test_remove_cart_item(logged_in_client, test_user, test_category):
     assert db.session.get(ProductOrder, (product.id, order.id)).quantity == 1
 
     res = logged_in_client.get(f"/cart/remove/{product.id}", follow_redirects=True)
-    
+
+    # Assert: HTTP 200 OK
+    assert res.status_code == 200
     # Test to see if it is gone
     assert db.session.get(ProductOrder, (product.id, order.id)) == None
 
@@ -77,6 +87,9 @@ def test_generate_cart_random_quantity(logged_in_client, test_user, test_categor
 
     # Generate cart under budget
     response = logged_in_client.post("/cart/generate", data={"budget": test_budget}, follow_redirects=True)
+    
+    # Checking to see if it errors out
+    assert response.status_code == 200
 
     # Get the pending order for the test user
     stmt = db.select(Order).where(Order.customer_id == test_user.id, Order.completed == None)
