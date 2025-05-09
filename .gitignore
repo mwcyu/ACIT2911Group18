@@ -5,5 +5,4 @@
 *.pyc
 .env
 __pycache__/
-/logs/
-*.log
+project1.db

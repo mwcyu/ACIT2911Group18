@@ -2,7 +2,13 @@
 {% block pagetitle %}Home{% endblock %}
 {% block content %}
 
-<h2 class="my-4">Featured Seasonal Products</h2>
+<h2 class="mb-4">Featured Seasonal Products</h2>
+
+{% if current_user.is_authenticated %}
+<a class="btn btn-secondary mb-4" href="{{ url_for('cart.generate_cart') }}">
+    Generate Cart
+</a>
+{% endif %}
 
 {% if products %}
 <div class="row row-cols-1 row-cols-md-3 g-4">

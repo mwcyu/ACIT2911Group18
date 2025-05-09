@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-3">🎯 Smart Cart Generator</h2>
+    <p class="lead">Enter your budget and we'll automatically add seasonal products to your cart that fit within it.</p>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" class="mt-4">
+        <div class="mb-3">
+            <label for="budget" class="form-label">Budget ($)</label>
+            <input type="number" step="0.01" min="1" name="budget" id="budget" class="form-control"
+                placeholder="e.g. 25.00" required>
+        </div>
+        <button type="submit" class="btn btn-success">Generate Cart</button>
+        <a href="{{ url_for('cart.view_cart') }}" class="btn btn-outline-secondary ms-2">Back to Cart</a>
+    </form>
+</div>
+
+{% endblock %}

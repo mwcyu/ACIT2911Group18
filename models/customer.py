@@ -19,12 +19,15 @@ class Customer(db.Model, UserMixin):
     name = db.mapped_column(db.String)
     phone = db.mapped_column(db.String, unique=True)
     email = db.mapped_column(db.String, unique=True, nullable=True)
+    active_cart_id = db.mapped_column(db.Integer, nullable=True)
+
     
     password = db.mapped_column(db.String, nullable=True)
     
     is_admin = db.mapped_column(db.Boolean, default=False)
     
     orders = db.relationship("Order", back_populates="customer")
+
 
     def __repr__(self):
         return f"{self.name} - {self.phone}"

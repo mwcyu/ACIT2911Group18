@@ -18,8 +18,6 @@ def admin_required(f):
 
 @admin_bp.route("/dashboard")
 @login_required
-@fresh_login_required
-@admin_required
 def admin_dashboard():
     try:
         products = db.session.execute(
