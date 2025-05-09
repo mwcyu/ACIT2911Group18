@@ -88,7 +88,8 @@ def register():
             flash("This phone number already has an account", "warning")
             return render_template("register.html", form=form)
 
-        new_customer = Customer(name=name, phone=phone, email=email, password=password)
+        new_customer = Customer(name=name, phone=phone, email=email)
+        new_customer.set_password(password)
         db.session.add(new_customer)
         db.session.commit()
         
@@ -145,7 +146,7 @@ def reset_password(token):
     
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        customer.password = form.password.data.strip()
+        customer.set_password(form.password.data.strip())
         db.session.commit()
         flash("Your password has been updated.", "success")
         return redirect(url_for("auth.login"))
