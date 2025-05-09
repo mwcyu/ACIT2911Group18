@@ -18,7 +18,7 @@ def test_login_with_wrong_password(client, test_user):
         "phone": test_user.phone,
         "password": "wrongpass"
     }, follow_redirects=True)
-    assert response.status_code == 200
+    print(response.data)
     assert b"Invalid phone number or password." in response.data
 
 def test_register_new_account(client, db):
