@@ -92,6 +92,16 @@
   </nav>
 
   <main class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages[:3] %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 
@@ -99,7 +109,7 @@
     <div class="container text-center small text-muted">
       Session Info:
       User: {{session.customer_name}} (ID: {{session.customer_id}}) |
-      Cart Items: {{session.cart|length if session.cart else 0}}
+      Active Cart ID: {{current_user.active_cart_id}}
     </div>
   </footer>
 

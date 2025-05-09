@@ -59,9 +59,15 @@
     {% if order.completed is none %}
     <li class="list-group-item d-flex justify-content-between align-items-center">
       Order #{{ order.id }} <small class="text-muted">({{ order.created.strftime('%Y-%m-%d %H:%M') }})</small>
+      {% if order.id != current_user.active_cart_id %}
       <a href="{{ url_for('cart.switch_pending_order', order_id=order.id) }}"
         class="btn btn-sm btn-outline-secondary">Switch</a>
+      {% else %}
+      <button class="btn btn-sm btn-outline-primary">Active</button>
+      {% endif %}
     </li>
+
+
     {% endif %}
     {% endfor %}
   </ul>

@@ -201,5 +201,5 @@ def switch_pending_order(order_id: int):
     db.session.commit()
 
     flash(f"Switched to order #{order.id}", "info")
-    return redirect(url_for("cart.view_cart"))
+    return redirect(request.referrer)
 

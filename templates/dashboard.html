@@ -4,6 +4,7 @@
 <div class="container my-4">
   <h2 class="mb-4">📦 Order Summary</h2>
 
+
   {% if orders %}
   <div class="list-group">
     {% for order in orders %}
@@ -23,6 +24,8 @@
         {% if order.id != current_user.active_cart_id %}
         <a href="{{ url_for('cart.switch_pending_order', order_id=order.id) }}"
           class="btn btn-sm btn-outline-secondary">Switch to This</a>
+        {% else %}
+        <a href="" class="btn btn-sm btn-outline-primary">Active Cart</a>
         {% endif %}
         {% endif %}
       </div>

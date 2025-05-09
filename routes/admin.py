@@ -7,7 +7,6 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 @admin_bp.route("/dashboard")
 @login_required
-@fresh_login_required
 def admin_dashboard():
     if not getattr(current_user, "is_admin", False):
         return "Unauthorized", 403

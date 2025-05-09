@@ -23,7 +23,7 @@ class Order(db.Model):
         for item in self.items:
             total += item.quantity * item.product.price
         
-        return round(total,2)
+        return float(round(total,2))
     
     def complete(self):
         products_to_update = []

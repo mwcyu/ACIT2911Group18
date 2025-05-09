@@ -2,14 +2,23 @@
 import pytest
 from app import app as flask_app
 from db import db as _db
-from models import Customer, Category
+from models import Customer, Category, Product
+from flask_login import LoginManager, login_user
 
+def assert_flashed_message(response, message: str, category: str = None):
+    """Check for flashed messages in response HTML"""
+    decoded = response.data.decode()
+    if category:
+        assert f"alert alert-{category}" in decoded
+    assert message in decoded
 
 @pytest.fixture()
 def app():
     flask_app.config.update({
         "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:","SQLALCHEMY_ENGINE_OPTIONS": {
+            "connect_args": {"check_same_thread": False}
+        },
         "SECRET_KEY": "testsecret",
         "WTF_CSRF_ENABLED": False,
         "LOGIN_DISABLED": False
@@ -38,6 +47,20 @@ def test_category(db):
     db.session.commit()
     return category
 
+@pytest.fixture
+def test_product(db, test_category):
+    product = Product(
+        name="Test Product",
+        price=9.99,
+        available=10,
+        seasonal=True,
+        in_season=True,
+        category=test_category
+    )
+    db.session.add(product)
+    db.session.commit()
+    return product
+
 
 @pytest.fixture
 def test_user(db):
@@ -49,8 +72,12 @@ def test_user(db):
 
 
 @pytest.fixture
-def logged_in_client(client, test_user):
-    with client.session_transaction() as sess:
-        sess['_user_id'] = str(test_user.id)
-        sess['_fresh'] = True
+def logged_in_client(client, test_user, app):
+    with app.test_request_context():
+        login_user(test_user)
+
+    # Use the test client to log in session-wise
+    with client.session_transaction() as session:
+        session["_user_id"] = str(test_user.id)
+
     return client
