@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block pagetitle %}Face Scan - Authorize{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <img src="{{ url_for('video_feed')}}" alt="">
+        </div>
+    </div>
+</div>
+{% endblock %}

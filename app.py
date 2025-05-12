@@ -1,5 +1,5 @@
 # Import necessary modules and extensions
-from flask import Flask, render_template  # Flask framework and template rendering
+from flask import Flask, render_template, Response  # Flask framework and template rendering
 from flask_login import LoginManager, login_required, current_user  # User authentication and session management
 from flask_mail import Mail  # Email handling
 from pathlib import Path  # File path management
@@ -9,6 +9,8 @@ from authlib.integrations.flask_client import OAuth
 # Import database and models
 from db import db  # SQLAlchemy database instance
 from models import Customer, Category, Product # Database models for Customer and Category
+
+from face_utils import gen_face_recognition_stream
 
 # Import blueprints for modular route handling
 from routes import (
@@ -98,6 +100,11 @@ def dashboard_page():
     orders = current_user.orders
     # Render the dashboard.html template with the user's orders
     return render_template("dashboard.html", orders=orders)
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(gen_face_recognition_stream(),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
 
 # Run the application in debug mode on port 8888
 if __name__ == "__main__":
