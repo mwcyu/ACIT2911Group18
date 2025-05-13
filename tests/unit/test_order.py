@@ -24,7 +24,7 @@ def test_estimate_with_items(db, test_user, test_product):
     db.session.commit()
     
     # Expected total: 2 * 9.99 = 19.98
-    assert order.estimate() == 19.98
+    assert order.estimate() == float(19.98)
 
 
 def test_estimate_with_multiple_items(db, test_user, test_product):
@@ -48,7 +48,7 @@ def test_estimate_with_multiple_items(db, test_user, test_product):
     db.session.commit()
     
     # Expected: (2 * 9.99) + (3 * 5.99) = 19.98 + 17.97 = 37.95
-    assert order.estimate() == 37.95
+    assert order.estimate() == float(37.95)
 
 
 def test_complete_success(db, test_user, test_product):

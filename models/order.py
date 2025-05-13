@@ -11,7 +11,7 @@ class Order(db.Model):
     # db.func.now() is NOW()
     created = db.mapped_column(db.DateTime, nullable=False, default=db.func.now())
     completed = db.mapped_column(db.DateTime, nullable=True, default=None)
-    amount = db.mapped_column(db.DECIMAL(6,2), nullable=True, default=None)
+    amount = db.mapped_column(db.Float(6,2), nullable=True, default=None)
 
     items = db.relationship('ProductOrder', back_populates="order")
     customer = db.relationship('Customer', back_populates='orders')
@@ -24,7 +24,7 @@ class Order(db.Model):
         for item in self.items:
             total += item.quantity * item.product.price
         
-        return Decimal(round(total,2))
+        return float(round(total,2))
     
     def complete(self):
         products_to_update = []
