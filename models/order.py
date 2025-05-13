@@ -1,4 +1,5 @@
 from db import db
+from decimal import Decimal
 
 
 class Order(db.Model):
@@ -23,7 +24,7 @@ class Order(db.Model):
         for item in self.items:
             total += item.quantity * item.product.price
         
-        return float(round(total,2))
+        return Decimal(round(total,2))
     
     def complete(self):
         products_to_update = []
