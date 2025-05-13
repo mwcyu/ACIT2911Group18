@@ -5,4 +5,4 @@
 *.pyc
 .env
 __pycache__/
-*.db
+project1.db

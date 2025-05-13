@@ -41,6 +41,13 @@ def csvReader(filename, klass):
                 item["in_season"] = str_to_bool(item.get("in_season", False))
                 item["category"] = category_obj
                 db.session.add(klass(**item))
+            elif klass == Customer:
+                # Hash the password before creating the Customer
+                password = item.pop("password", None)
+                customer = klass(**item)
+                if password:
+                    customer.set_password(password)
+                db.session.add(customer)
             else:
                 db.session.add(klass(**item))
         db.session.commit()
@@ -142,4 +149,4 @@ if __name__ == "__main__":
         # make_completed_orders()
         # obj = Category(name="dairy") 
         # db.session.add(obj) 
-        # db.session.commit() 
+        # db.session.commit()
