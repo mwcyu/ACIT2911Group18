@@ -55,7 +55,7 @@ def login():
         stmt = db.select(Customer).where(Customer.phone == phone)
         customer = db.session.execute(stmt).scalar_one_or_none()
         
-        if customer and password:
+        if customer and customer.check_password(password):
             login_user(customer)
 
             # Store custom session data
