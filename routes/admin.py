@@ -27,7 +27,6 @@ def toggle_season(product_id):
 
     product.in_season = not product.in_season
     db.session.commit()
-
     return redirect(url_for("admin.admin_dashboard"))
 
 
