@@ -15,8 +15,8 @@
     {% for product in products %}
     <div class="col">
         <div class="card h-100">
-            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top" 
-                style="height: 200px; object-fit: cover;" alt="{{ product.name }}">
+            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top"
+                style="height: 300px; object-fit: cover;" alt="{{ product.name }}">
             <div class="card-body">
                 <a href="{{ url_for('products.individual_product_page',id=product.id)}}">
                     <h5 class="card-title">{{ product.name }}</h5>
