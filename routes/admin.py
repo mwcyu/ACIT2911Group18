@@ -27,5 +27,18 @@ def toggle_season(product_id):
 
     product.in_season = not product.in_season
     db.session.commit()
+    return redirect(url_for("admin.admin_dashboard"))
+
+
+@admin_bp.route("/turn_all_out_of_season")
+@login_required
+def turn_all_out_of_season():
+    if not getattr(current_user, "is_admin", False):
+        return "Unauthorized", 403
+
+    products = db.session.execute(db.select(Product)).scalars().all()
+    for product in products:
+        product.in_season = False
+    db.session.commit()
 
     return redirect(url_for("admin.admin_dashboard"))
