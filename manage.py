@@ -1,5 +1,5 @@
 from db import db
-from models import Customer, Category, Product, Order, ProductOrder
+from models import Customer, Category, Product, Order, ProductOrder, Season
 import random
 
 from app import app
@@ -34,12 +34,18 @@ def csvReader(filename, klass):
                     db.session.add(category_obj)
                 else:
                     category_obj = possible_category
-                    
+                possible_season = db.session.execute(db.select(Season).where(Season.name == item["season"])).scalar()
+                if not possible_season:
+                    season_obj = Season(name=item["season"])
+                    db.session.add(season_obj)
+                else:
+                    season_obj = possible_season
                 item["price"] = float(item["price"])
                 item["available"] = int(item["available"])
                 item["seasonal"] = str_to_bool(item.get("seasonal", False))
                 item["in_season"] = str_to_bool(item.get("in_season", False))
                 item["category"] = category_obj
+                item["season"] = season_obj
                 db.session.add(klass(**item))
             elif klass == Customer:
                 # Hash the password before creating the Customer
