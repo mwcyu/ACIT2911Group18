@@ -7,6 +7,10 @@ Admin Dashboard
 {% block content %}
 <h2 class="my-3">Admin Dashboard</h2>
 
+<div class="mb-3">
+  <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of Season</a>
+</div>
+
 <table class="table table-striped">
   <thead>
     <tr>
