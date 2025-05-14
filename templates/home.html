@@ -10,6 +10,10 @@
 </a>
 {% endif %}
 
+<a class="btn btn-primary mb-4" href="{{ url_for('game') }}">
+    Play for Discount
+</a>
+
 {% if products %}
 <div class="row row-cols-1 row-cols-md-3 g-4">
     {% for product in products %}

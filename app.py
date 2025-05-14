@@ -75,5 +75,9 @@ def home_page():
 def dashboard_page():
     return render_template("dashboard.html", orders=current_user.orders)
 
+@app.route('/game')
+def game():
+    return render_template('game.html')
+
 if __name__ == "__main__":
     app.run(debug=True, port=8888)
