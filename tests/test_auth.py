@@ -1,4 +1,9 @@
 from flask import session
+import numpy as np
+import face_recognition
+import cv2
+import pytest
+from unittest.mock import patch, MagicMock
 
 def test_login_page_loads(client):
     res = client.get("/auth/login")
@@ -14,80 +19,120 @@ def test_access_session(client):
                         })
         assert session["_user_id"] == "2"
 
-# def test_modify_session(client):
-#     with client.session_transaction() as session:
-#         # set a user id without going through the login route
-#         session["_user_id"] = "1"
-
-#     # session is saved now
-
-#     response = client.get("/")
-#     assert response.json["name"] == ""
-    
-
 def test_request_example(client):
     res = client.get("/")
-    
-    # print(res.get_data(as_text=True))  # Returns decoded string
     assert b"Store" in res.data
 
 
-# def test_register_page_loads(client):
-#     res = client.get("/auth/register")
-#     assert res.status_code == 200
-#     assert b"Register" in res.data
+@pytest.fixture
+def mock_face_recognition():
+    with patch('face_recognition.face_locations') as mock_locations:
+        with patch('face_recognition.face_encodings') as mock_encodings:
+            # Mock face detection
+            mock_locations.return_value = [(0, 20, 20, 0)]  # Mock face location
+            mock_encodings.return_value = [np.array([0.1, 0.2, 0.3])]  # Mock face encoding
+            yield {
+                'locations': mock_locations,
+                'encodings': mock_encodings
+            }
+
+def test_facescan_page_loads(client):
+    res = client.get("/auth/facescan")
+    assert res.status_code == 200
+    assert b"Face Recognition" in res.data
 
 
-# def test_register_new_user(client, app):
-#     # Simulate registering a new user
-#     res = client.post("/auth/register", data={
-#         "name": "Test User",
-#         "phone": "1234567890",
-#         "password": "testpass"
-#     }, follow_redirects=True)
-
-#     assert res.status_code == 200
-#     assert b"Login" in res.data
+def test_facescan_page_register_mode(client):
+    res = client.get("/auth/facescan?register=true")
+    assert res.status_code == 200
+    assert b"Face Registration" in res.data
 
 
-# def test_login_valid_user(client, app):
-#     # First register the user
-#     client.post("/auth/register", data={
-#         "name": "Valid User",
-#         "phone": "2223334444",
-#         "password": "mypassword"
-#     }, follow_redirects=True)
-
-#     # Then try logging in
-#     res = client.post("/auth/login", data={
-#         "phone": "2223334444",
-#         "password": "mypassword"
-#     }, follow_redirects=True)
-
-#     assert b"Logged in as" in res.data
+def test_register_face_no_session(client):
+    res = client.post("/auth/register-face")
+    assert res.status_code == 401
+    assert b"No user session" in res.data
 
 
-# def test_login_invalid_user(client):
-#     res = client.post("/auth/login", data={
-#         "phone": "wrong",
-#         "password": "wrong"
-#     })
-#     assert b"Invalid phone number or password" in res.data
+def test_register_face_no_image(client):
+    with client.session_transaction() as sess:
+        sess['user_id_for_face'] = 1
+    
+    res = client.post("/auth/register-face")
+    assert res.status_code == 400
+    assert b"No face image provided" in res.data
 
 
-# def test_logout(client, app):
-#     # Register and login
-#     client.post("/auth/register", data={
-#         "name": "Log Me Out",
-#         "phone": "1112223333",
-#         "password": "secret"
-#     })
+def test_register_face_success(client, mock_face_recognition):
+    # Create a test image
+    test_image = np.zeros((100, 100, 3), dtype=np.uint8)
+    _, img_encoded = cv2.imencode('.jpg', test_image)
+    
+    with client.session_transaction() as sess:
+        sess['user_id_for_face'] = 2  # Use existing test user ID
+    
+    # Create test data
+    data = {
+        'face': (img_encoded.tobytes(), 'test.jpg'),
+        'label': 'Test Face'
+    }
+    
+    res = client.post("/auth/register-face", 
+                     data=data, 
+                     content_type='multipart/form-data')
+    
+    assert res.status_code == 200
+    json_data = res.get_json()
+    assert json_data['success'] is True
+    assert "Face registered successfully" in json_data['message']
+    assert json_data['total_faces'] > 0
 
-#     client.post("/auth/login", data={
-#         "phone": "1112223333",
-#         "password": "secret"
-#     })
 
-#     # Logout
-#     res = client.get("/auth/logout", follow_redirects=True)
-#     assert b"Login" in res.data
+def test_register_face_no_face_detected(client, mock_face_recognition):
+    # Mock no face detected
+    mock_face_recognition['locations'].return_value = []
+    
+    # Create a test image
+    test_image = np.zeros((100, 100, 3), dtype=np.uint8)
+    _, img_encoded = cv2.imencode('.jpg', test_image)
+    
+    with client.session_transaction() as sess:
+        sess['user_id_for_face'] = 2
+    
+    data = {
+        'face': (img_encoded.tobytes(), 'test.jpg')
+    }
+    
+    res = client.post("/auth/register-face", 
+                     data=data, 
+                     content_type='multipart/form-data')
+    
+    assert res.status_code == 400
+    assert b"No face detected in image" in res.data
+
+
+def test_face_status_no_session(client):
+    res = client.get("/auth/face-status")
+    assert res.status_code == 401
+    assert b"No active face recognition session" in res.data
+
+
+def test_face_status_recognition_success(client):
+    with client.session_transaction() as sess:
+        sess['user_id_for_face'] = 2
+        sess['recognized_face'] = True
+    
+    res = client.get("/auth/face-status")
+    assert res.status_code == 200
+    json_data = res.get_json()
+    assert json_data['success'] is True
+
+
+def test_face_status_recognition_pending(client):
+    with client.session_transaction() as sess:
+        sess['user_id_for_face'] = 2
+    
+    res = client.get("/auth/face-status")
+    assert res.status_code == 200
+    json_data = res.get_json()
+    assert json_data['success'] is False

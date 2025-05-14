@@ -6,8 +6,264 @@
 <div class="row justify-content-center mt-5">
     <div class="col-md-6">
         <div class="card shadow-sm border-0">
-            <img src="{{ url_for('video_feed')}}" alt="">
+            <div class="card-body text-center">
+                <h3 class="mb-4">{{ 'Face Registration' if register_mode else 'Face Recognition' }}</h3>
+
+                <!-- Webcam Feed -->
+                <div class="position-relative mb-4">
+                    <img id="videoFeed" src="{{ url_for('video_feed')}}" alt="" class="img-fluid rounded border">
+                    <video id="cameraFeed" class="img-fluid rounded border" style="display: none;" autoplay
+                        playsinline></video>
+                    <canvas id="captureCanvas" style="display: none;"></canvas>
+
+                    <!-- Loading Overlay -->
+                    <div id="loading" class="position-absolute top-50 start-50 translate-middle" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <!-- Capture Countdown -->
+                    <div id="countdown" class="position-absolute top-50 start-50 translate-middle display-1 text-white"
+                        style="display: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"></div>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="status" class="alert mt-3" style="display: none;"></div>
+
+                <!-- Face Registration Section -->
+                {% if register_mode %}
+                <div class="mt-4">
+                    <h4 class="mb-3">Add Face Photos</h4>
+                    <p class="text-muted mb-4">Add multiple photos from different angles for better recognition</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">Label for this photo (optional)</label>
+                        <input type="text" id="faceLabel" class="form-control"
+                            placeholder="e.g. Front view, Side view, With glasses">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="captureBtn" class="btn btn-primary btn-lg">
+                            <i class="bi bi-camera-fill me-2"></i>Capture from Camera
+                        </button>
+                        <label class="btn btn-outline-primary mb-0">
+                            <i class="bi bi-upload me-2"></i>Upload Photo
+                            <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
+                        </label>
+                        <button id="doneBtn" class="btn btn-success">
+                            <i class="bi bi-check-lg me-2"></i>Done - Go to Dashboard
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-4 d-grid gap-2">
+                    <p class="text-muted mb-4">Please look at the camera for face verification</p>
+                    <button id="cancelBtn" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Login
+                    </button>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const startCamBtn = document.getElementById('startCamBtn');
+        const uploadPhoto = document.getElementById('uploadPhoto');
+        const doneBtn = document.getElementById('doneBtn');
+        const faceLabel = document.getElementById('faceLabel');
+        const videoFeed = document.getElementById('videoFeed');
+        const cameraFeed = document.getElementById('cameraFeed');
+        const captureCanvas = document.getElementById('captureCanvas');
+
+        let stream = null;
+        let isCaptureModeActive = false;
+
+        {% if register_mode %}
+        // Face Registration Mode
+        captureBtn.onclick = async function () {
+            if (!isCaptureModeActive) {
+                // Start live camera feed
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    cameraFeed.srcObject = stream;
+                    videoFeed.style.display = 'none';
+                    cameraFeed.style.display = 'block';
+                    captureBtn.innerHTML = '<i class="bi bi-camera me-2"></i>Take Photo';
+                    isCaptureModeActive = true;
+
+                    // Show hint
+                    status.textContent = 'Position your face in the center and click Take Photo';
+                    status.className = 'alert alert-info';
+                    status.style.display = 'block';
+                } catch (err) {
+                    status.textContent = 'Error accessing camera: ' + err.message;
+                    status.className = 'alert alert-danger';
+                    status.style.display = 'block';
+                }
+            } else {
+                // Start countdown
+                const countdown = document.getElementById('countdown');
+                countdown.style.display = 'block';
+
+                for (let i = 3; i > 0; i--) {
+                    countdown.textContent = i;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                countdown.textContent = 'SMILE!';
+
+                // Capture photo after a short delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Capture and process photo
+                captureCanvas.width = cameraFeed.videoWidth;
+                captureCanvas.height = cameraFeed.videoHeight;
+                captureCanvas.getContext('2d').drawImage(cameraFeed, 0, 0);
+
+                countdown.style.display = 'none';
+                const blob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg'));
+                await uploadFace(blob, faceLabel.value);                // Stop camera and return to recognition feed
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                cameraFeed.style.display = 'none';
+                videoFeed.style.display = 'block';
+                captureBtn.innerHTML = '<i class="bi bi-camera-fill me-2"></i>Capture from Camera';
+                isCaptureModeActive = false;
+            }
+        };
+
+        uploadPhoto.onchange = async function (e) {
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+
+                // Show loading state
+                loading.style.display = 'block';
+                status.style.display = 'none';
+
+                try {
+                    await uploadFace(file, faceLabel.value);
+                } catch (err) {
+                    status.textContent = 'Error uploading photo: ' + err.message;
+                    status.className = 'alert alert-danger';
+                    status.style.display = 'block';
+                } finally {
+                    loading.style.display = 'none';
+                    e.target.value = '';  // Reset file input
+                }
+            }
+        };
+
+        doneBtn.onclick = function () {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            status.textContent = 'Face registration complete! Redirecting to dashboard...';
+            status.className = 'alert alert-success';
+            status.style.display = 'block';
+            setTimeout(() => window.location.href = '/dashboard', 1500);
+        }; async function uploadFace(blob, label) {
+            loading.style.display = 'block';
+            status.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('face', blob);
+            if (label) formData.append('label', label);
+
+            try {
+                const response = await fetch('/auth/register-face', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    status.textContent = result.message;
+                    status.className = 'alert alert-success';
+
+                    // Clear and update label suggestions based on total faces
+                    faceLabel.value = '';
+                    if (result.total_faces === 1) {
+                        faceLabel.placeholder = 'e.g. Side view, With glasses';
+                        status.innerHTML += '<br><small class="text-muted">Tip: Add more photos from different angles for better recognition</small>';
+                    } else if (result.total_faces === 2) {
+                        faceLabel.placeholder = 'e.g. At an angle, Different lighting';
+                    }
+
+                    // Update the button text
+                    if (result.total_faces >= 3) {
+                        doneBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>All Set - Go to Dashboard';
+                        doneBtn.className = 'btn btn-success btn-lg';
+                    }
+                } else {
+                    status.textContent = result.error || 'Failed to register face';
+                    status.className = 'alert alert-danger';
+                }
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                status.className = 'alert alert-danger';
+            }
+
+            loading.style.display = 'none';
+            status.style.display = 'block';
+        } {% else %}        // Face Login Mode
+        let pollStatus = null;
+
+        async function startPolling() {
+            pollStatus = setInterval(async () => {
+                try {
+                    const response = await fetch('/auth/face-status');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const confidencePercent = Math.round(data.confidence * 100);
+                        status.textContent = `Face recognized with ${confidencePercent}% confidence! Redirecting...`;
+                        status.className = 'alert alert-success';
+                        status.style.display = 'block';
+                        clearInterval(pollStatus);
+                        setTimeout(() => window.location.href = data.redirect_url, 1000);
+                    } else if (data.error) {
+                        status.textContent = data.error;
+                        status.className = 'alert alert-danger';
+                        status.style.display = 'block';
+                    }
+                } catch (err) {
+                    console.error('Error checking face status:', err);
+                }
+            }, 1000);
+        }
+
+        // Automatically start camera and face detection on login page load
+        (async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+                videoFeed.style.display = 'none';
+                cameraFeed.style.display = 'block';
+                startPolling();
+            } catch (err) {
+                status.textContent = 'Error accessing camera: ' + err.message;
+                status.className = 'alert alert-danger';
+                status.style.display = 'block';
+            }
+        })();
+
+        cancelBtn.onclick = () => {
+            if (pollStatus) clearInterval(pollStatus);
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            window.location.href = '/auth/login';
+        };
+        {% endif %}
+    });
+</script>
 {% endblock %}

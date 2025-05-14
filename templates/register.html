@@ -20,7 +20,7 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('auth.register') }}">
+        <form id="registerForm">
           {{ form.hidden_tag() }}
 
           <div class="mb-3">
@@ -55,8 +55,8 @@
             {% endfor %}
           </div>
 
-          <div class="d-grid">
-            {{ form.submit(class="btn btn-success") }}
+          <div class="d-grid gap-2">
+            {{ form.submit(class="btn btn-success mb-3") }}
           </div>
         </form>
 
@@ -64,6 +64,28 @@
           Already have an account?
           <a href="{{ url_for('auth.login') }}">Login here</a>.
         </div>
+
+        <script>
+          document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            try {
+              const response = await fetch("{{ url_for('auth.register') }}", {
+                method: 'POST',
+                body: formData
+              });
+
+              const result = await response.json();
+              if (result.success) {
+                window.location.href = '/auth/facescan?register=true';
+              } else {
+                alert(result.error || 'Registration failed');
+              }
+            } catch (err) {
+              alert('Error: ' + err.message);
+            }
+          });
+        </script>
       </div>
     </div>
   </div>

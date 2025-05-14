@@ -1,27 +1,20 @@
 from db import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from .order import Order
 
 class Customer(db.Model, UserMixin):
-    """
-    UserMixin gives Customer:
-    is_authenticated
-    is_active
-    is_anonymous
-    is_id()
-    """
+    # UserMixin gives Customer: is_authenticated, is_active, is_anonymous, get_id()
     __tablename__ = "Customers"
-
+    
     id = db.mapped_column(db.Integer, primary_key=True)
     github_id = db.mapped_column(db.Integer, nullable=True, unique=True)
     name = db.mapped_column(db.String)
     phone = db.mapped_column(db.String, unique=True)
     email = db.mapped_column(db.String, unique=True, nullable=True)
-    
     password = db.mapped_column(db.String, nullable=True)
-    
+    face_encodings = db.mapped_column(db.JSON, nullable=True, default=list)  # List of face encodings
+    face_labels = db.mapped_column(db.JSON, nullable=True, default=list)  # List of labels for each encoding
     is_admin = db.mapped_column(db.Boolean, default=False)
     
     orders = db.relationship("Order", back_populates="customer")
@@ -29,16 +22,24 @@ class Customer(db.Model, UserMixin):
     def __repr__(self):
         return f"{self.name} - {self.phone}"
     
-    
     def set_password(self, password):
         self.password = generate_password_hash(password)
     
     def check_password(self, password):
         return check_password_hash(self.password, password)
     
+    def add_face_encoding(self, encoding, label=None):
+        """Add a new face encoding with an optional label"""
+        if self.face_encodings is None:
+            self.face_encodings = []
+        if self.face_labels is None:
+            self.face_labels = []
+            
+        self.face_encodings.append(encoding)
+        self.face_labels.append(label or f"Face {len(self.face_encodings)}")
+    
     def to_json(self):
         pending_orders = [order for order in self.orders if order.completed == None]
-        
         completed_orders = [order for order in self.orders if order.completed]
         
         output = {
@@ -51,10 +52,8 @@ class Customer(db.Model, UserMixin):
             },
             "admin": self.is_admin
         }
-
-
         return output
-    
+
 
 
 

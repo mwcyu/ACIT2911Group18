@@ -38,14 +38,18 @@
             <div class="text-danger small">{{ error }}</div>
             {% endfor %}
           </div>
-
-          <div class="d-grid">
+          <div class="d-grid gap-2">
             {{ form.submit(class="btn btn-primary") }}
           </div>
         </form>
 
         <div class="text-center my-3">or</div>
 
+        <div class="d-grid">
+          <a href="{{ url_for('auth.facescan') }}" class="btn btn-outline-primary">
+            <i class="bi bi-camera-fill me-2"></i>Login with Face Recognition
+          </a>
+        </div>
 
         <div class="text-center">
           <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">
