@@ -50,13 +50,14 @@
                   href="{{ url_for('categories.category_detail', name='beverages') }}">Beverages</a></li>
             </ul>
           </li>
+
+          {% if current_user.is_authenticated and current_user.is_admin %}
           <li class="nav-item">
             <a href="{{ url_for('orders.orders_page') }}"
               class="nav-link {% if request.endpoint == 'orders.orders_page' %}active{% endif %}">
               Orders
             </a>
           </li>
-          {% if current_user.is_authenticated and current_user.is_admin %}
           <li class="nav-item">
             <a href="{{ url_for('customers.customers_detail') }}"
               class="nav-link {% if request.endpoint == 'customers.customers_detail' %}active{% endif %}">

@@ -7,7 +7,7 @@ from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 
 from db import db
-from models import Customer, Category, Product
+from models import Customer, Category, Product, Coupon
 
 # Load .env variables
 load_dotenv()
@@ -65,15 +65,93 @@ app.config['GITHUB_OAUTH_CLIENT'] = github
 
 # --- Routes ---
 @app.route("/")
+@login_required
 def home_page():
     categories = db.session.execute(db.select(Category)).scalars()
     products = db.session.execute(db.select(Product).where(Product.in_season == True)).scalars()
     return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
+@app.route("/spring")
+def spring_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "spring")).scalars()
+    return render_template("spring.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/summer")
+def summer_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "summer")).scalars()
+    return render_template("summer.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/fall")
+def autumn_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "fall")).scalars()
+    return render_template("fall.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/winter")
+def winter_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "winter")).scalars()
+    return render_template("winter.html", categories=categories, current_user=current_user, products=products)
+
 @app.route("/dashboard")
 @login_required
 def dashboard_page():
-    return render_template("dashboard.html", orders=current_user.orders)
+    # Get user's coupons
+    user_coupons = current_user.coupons
+    return render_template("dashboard.html", orders=current_user.orders, coupons=user_coupons)
+
+@app.route("/spin-wheel", methods=["GET", "POST"])
+@login_required
+def spin_wheel():
+    from flask import request, redirect, url_for, flash
+    if request.method == "POST":
+        coupon_code = request.form.get("coupon_code")
+        if coupon_code != 'NO_PRIZE':
+            coupon = db.session.execute(
+                db.select(Coupon).where(Coupon.code == coupon_code, Coupon.active == True)
+            ).scalar_one_or_none()
+            
+            if not coupon:
+                flash("Invalid coupon code.", "danger")
+            elif coupon in current_user.coupons:
+                flash("You already have this coupon!", "info")
+            else:
+                current_user.coupons.append(coupon)
+                db.session.commit()
+                flash(f"Congratulations! {coupon.code} coupon has been added to your account!", "success")
+                return redirect(url_for("dashboard_page"))
+        
+        return redirect(url_for("spin_wheel"))
+
+    # Get all active coupons for the wheel
+    wheel_coupons = db.session.execute(
+        db.select(Coupon)
+        .where(Coupon.active == True)
+    ).scalars().all()
+    
+    # Convert coupons to dict for JSON serialization
+    wheel_coupons = [{
+        'code': c.code,
+        'description': c.description,
+        'discount_amount': float(c.discount_amount),
+        'is_percent': c.is_percent,
+        'minimum_purchase': float(c.minimum_purchase) if c.minimum_purchase else None
+    } for c in wheel_coupons]
+
+    return render_template("spin_wheel.html", wheel_coupons=wheel_coupons)
+
+@app.route("/apply-coupon", methods=["POST"])
+@login_required
+def apply_coupon():
+    from flask import request, redirect, url_for, flash
+    coupon_code = request.form.get("coupon_code")
+    # Here you would validate the coupon and attach it to the user's session/cart
+    # For now, just flash a message and redirect to cart/checkout
+    flash(f"Coupon {coupon_code} applied!", "success")
+    # You should implement logic to store the coupon for the user's checkout
+    return redirect(url_for("cart.generate_cart"))
 
 if __name__ == "__main__":
     app.run(debug=True, port=8888)

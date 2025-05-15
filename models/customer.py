@@ -3,7 +3,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .order import Order
-
+from models.customerCoupon import customer_coupons
 class Customer(db.Model, UserMixin):
     """
     UserMixin gives Customer:
@@ -27,6 +27,11 @@ class Customer(db.Model, UserMixin):
     is_admin = db.mapped_column(db.Boolean, default=False)
     
     orders = db.relationship("Order", back_populates="customer")
+    coupons = db.relationship(
+        "Coupon",
+        secondary=customer_coupons,
+        back_populates="owners"
+    )
 
 
     def __repr__(self):
@@ -57,10 +62,6 @@ class Customer(db.Model, UserMixin):
 
 
         return output
-    
-
-
-
 
 
 

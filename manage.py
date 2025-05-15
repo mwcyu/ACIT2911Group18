@@ -1,5 +1,6 @@
 from db import db
-from models import Customer, Category, Product, Order, ProductOrder, Season
+from models import Customer, Category, Product, Order, ProductOrder, Season, Coupon
+from models.customerCoupon import customer_coupons
 import random
 
 from app import app
@@ -42,7 +43,6 @@ def csvReader(filename, klass):
                     season_obj = possible_season
                 item["price"] = float(item["price"])
                 item["available"] = int(item["available"])
-                item["seasonal"] = str_to_bool(item.get("seasonal", False))
                 item["in_season"] = str_to_bool(item.get("in_season", False))
                 item["category"] = category_obj
                 item["season"] = season_obj
@@ -54,6 +54,17 @@ def csvReader(filename, klass):
                 if password:
                     customer.set_password(password)
                 db.session.add(customer)
+            elif klass == Coupon:
+                # Convert types for Coupon fields
+                item["minimum_purchase"] = float(item["minimum_purchase"]) if item["minimum_purchase"] else 0.0
+                item["discount_amount"] = float(item["discount_amount"])
+                item["is_percent"] = str_to_bool(item["is_percent"])
+                item["active"] = str_to_bool(item["active"])
+                db.session.add(klass(**item))
+            elif klass == customer_coupons:
+                item["customer_id"] = int(item["customer_id"])
+                item["coupon_id"] = int(item["coupon_id"])
+                db.session.add(klass(**item))
             else:
                 db.session.add(klass(**item))
         db.session.commit()
@@ -140,6 +151,7 @@ if __name__ == "__main__":
         create_tables()
         csvReader("products.csv", Product)
         csvReader("customers.csv", Customer)
+        csvReader("coupons.csv", Coupon)
         make_orders()
         make_completed_orders()
         # obj = Category(name="dairy") 

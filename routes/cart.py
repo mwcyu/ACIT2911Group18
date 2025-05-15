@@ -4,6 +4,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from models import Product, ProductOrder, Order, Customer
+from models.coupon import Coupon
 from db import db
 import random
 
@@ -29,6 +30,15 @@ def get_or_create_pending_order(customer):
     return cart
 
 
+# Helper to get applied coupon from customer
+
+def get_applied_coupon(customer):
+    coupon_id = session.get('applied_coupon_id')
+    if coupon_id:
+        return db.session.get(Coupon, coupon_id)
+    return None
+
+
 @cart_bp.route("/add/<int:id>")
 @login_required
 def add_to_cart(id: int):
@@ -49,21 +59,47 @@ def add_to_cart(id: int):
     return redirect(request.referrer or url_for("dashboard_page"))
 
 
+@cart_bp.route("/apply-coupon", methods=["POST"])
+@login_required
+def apply_coupon():
+    coupon_id = request.form.get("coupon_id")
+    coupon = db.session.get(Coupon, coupon_id)
+    if not coupon or coupon not in current_user.coupons:
+        flash("Invalid or unavailable coupon.", "danger")
+        return redirect(url_for("cart.view_cart"))
+    session['applied_coupon_id'] = coupon.id
+    flash(f"Coupon {coupon.code} applied!", "success")
+    return redirect(url_for("cart.view_cart"))
+
+
 @cart_bp.route("/checkout")
 @login_required
 def checkout_cart():
     order = get_or_create_pending_order(current_user)
-
+    coupon = get_applied_coupon(current_user)
     if not order.items:
         flash("Your cart is empty.", "warning")
         return redirect(url_for("cart.view_cart"))
 
+    total = order.estimate()
+    discount = 0
+    if coupon:
+        if coupon.is_percent:
+            discount = total * (coupon.discount_amount / 100)
+        else:
+            discount = coupon.discount_amount
+        total = max(0, total - discount)
+        flash(f"Coupon {coupon.code} applied: -${discount:.2f}", "success")
+        # Remove coupon from customer after use
+        current_user.coupons.remove(coupon)
+        db.session.commit()
+        session.pop('applied_coupon_id', None)
 
     try:
         order.complete()
         db.session.commit()
         session.pop("active_order_id", None)
-        flash("Order completed successfully!", "success")
+        flash(f"Order completed successfully! Total: ${total:.2f}", "success")
     except ValueError:
         db.session.rollback()
         flash("One or more items exceed available stock.", "danger")
@@ -75,9 +111,7 @@ def checkout_cart():
 @login_required
 def view_cart():
     order = get_or_create_pending_order(current_user)
-
     cart_items = []
-    
     for item in order.items:
         product = item.product
         cart_items.append({
@@ -87,8 +121,26 @@ def view_cart():
             "quantity": item.quantity,
             "subtotal": round(float(product.price)*item.quantity,2)
         })
-
-    return render_template("cart.html", cart_items=cart_items, total=order.estimate())
+    # Coupon logic for display
+    applied_coupon_id = session.get('applied_coupon_id')
+    applied_coupon = None
+    discount = 0
+    total = order.estimate()
+    if applied_coupon_id:
+        from models.coupon import Coupon
+        applied_coupon = db.session.get(Coupon, applied_coupon_id)
+        if applied_coupon:
+            if applied_coupon.is_percent:
+                discount = total * (applied_coupon.discount_amount / 100)
+            else:
+                discount = applied_coupon.discount_amount
+    return render_template(
+        "cart.html",
+        cart_items=cart_items,
+        total=total,
+        applied_coupon=applied_coupon,
+        discount=discount
+    )
 
 
 @cart_bp.route("/update/<int:product_id>", methods=["POST"])
@@ -147,7 +199,6 @@ def generate_cart():
             return redirect(url_for("cart.generate_cart"))
 
         stmt = db.select(Product).where(
-            Product.seasonal == True,
             Product.in_season == True,
             Product.available > 0
         )

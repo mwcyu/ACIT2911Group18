@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block pagetitle %}Spin the Wheel!{% endblock %}
+{% block content %}
+<style>
+    .wheel-container {
+        position: relative;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        background: linear-gradient(145deg, #f6f8fa, #e8eaec);
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.1),
+            0 6px 6px rgba(0, 0, 0, 0.1),
+            inset 0 -5px 12px rgba(255, 255, 255, 0.7);
+    }
+
+    .wheel-inner {
+        position: relative;
+        width: 400px;
+        max-width: 100%;
+        margin: 2rem auto;
+    }
+
+    #wheelCanvas {
+        transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.15));
+        border-radius: 50%;
+    }
+
+    .pointer {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        z-index: 100;
+    }
+
+    #spinBtn {
+        background: linear-gradient(145deg, #3b82f6, #2563eb);
+        border: none;
+        padding: 1rem 3.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 3rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        color: white;
+        letter-spacing: 1px;
+    }
+
+    #spinBtn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        background: linear-gradient(145deg, #4f46e5, #3b82f6);
+    }
+
+    #spinBtn:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    #spinBtn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-claim {
+        background: linear-gradient(145deg, #22c55e, #16a34a);
+        border: none;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        color: white;
+    }
+
+    .btn-claim:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+        background: linear-gradient(145deg, #16a34a, #15803d);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes celebrate {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .result-animation {
+        animation: fadeInUp 0.5s ease, celebrate 1s ease 0.5s;
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--confetti-color);
+        opacity: 0;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="wheel-container">
+        <h2 class="text-center mb-4" style="color: #1e293b; font-weight: bold;">
+            🎉 Spin to Win Amazing Discounts! 🎉
+        </h2>
+        <div class="wheel-inner">
+            <svg class="pointer" viewBox="0 0 50 50">
+                <path d="M25 0 L50 40 L25 50 L0 40 Z" fill="#2563eb" />
+            </svg>
+            <canvas id="wheelCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="text-center mt-4">
+            <button id="spinBtn" class="btn">SPIN THE WHEEL</button>
+            <div id="result" class="mt-4 h4"></div>
+            <form id="claimForm" method="post" action="{{ url_for('spin_wheel') }}" style="display: none;">
+                <input type="hidden" name="coupon_code" id="couponCode">
+                <button type="submit" class="btn-claim mt-3">
+                    🎁 Claim Your Prize!
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinBtn');
+    const resultDiv = document.getElementById('result');
+    const claimForm = document.getElementById('claimForm');
+    const couponCodeInput = document.getElementById('couponCode');
+
+    const coupons = {{ wheel_coupons| tojson | safe }};
+    const segments = coupons.length;
+    const segmentAngle = (2 * Math.PI) / segments;
+
+    // Wheel drawing and animation variables
+    let currentRotation = 0;
+    let isSpinning = false;
+
+    function createGradient(centerX, centerY, radius, startAngle, endAngle, baseHue) {
+        const gradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+
+        const color1 = `hsl(${baseHue}, 85%, 65%)`;
+        const color2 = `hsl(${baseHue}, 85%, 55%)`;
+
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+
+        return gradient;
+    }
+
+    function drawWheel() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 10;
+
+        // Draw segments
+        coupons.forEach((coupon, index) => {
+            const startAngle = index * segmentAngle;
+            const endAngle = startAngle + segmentAngle;
+            const baseHue = (index * 360 / segments) % 360;
+
+            // Draw segment
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = createGradient(centerX, centerY, radius, startAngle, endAngle, baseHue);
+            ctx.fill();
+
+            // Add shine effect
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.95, startAngle, endAngle);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw text
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + segmentAngle / 2);
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Arial';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(coupon.description, radius - 30, 0);
+            ctx.restore();
+        });
+
+        // Draw center circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * 0.15, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
+    function createConfetti(x, y, color) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.setProperty('--confetti-color', color);
+        confetti.style.left = x + 'px';
+        confetti.style.top = y + 'px';
+        document.body.appendChild(confetti);
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 3 + Math.random() * 2;
+        const rotation = Math.random() * 360;
+        const lifetime = 1000 + Math.random() * 1000;
+
+        confetti.animate([
+            {
+                transform: `translate(0, 0) rotate(${rotation}deg)`,
+                opacity: 1
+            },
+            {
+                transform: `translate(${Math.cos(angle) * 100 * velocity}px, ${Math.sin(angle) * 100 * velocity}px) rotate(${rotation + 360}deg)`,
+                opacity: 0
+            }
+        ], {
+            duration: lifetime,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        }).onfinish = () => confetti.remove();
+    }
+
+    function celebrateWin(x, y) {
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                createConfetti(
+                    x + (Math.random() - 0.5) * 200,
+                    y + (Math.random() - 0.5) * 200,
+                    colors[Math.floor(Math.random() * colors.length)]
+                );
+            }, Math.random() * 1000);
+        }
+    }
+
+    spinButton.addEventListener('click', () => {
+        if (isSpinning) return;
+
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultDiv.textContent = '';
+        claimForm.style.display = 'none';
+
+        const spins = 5 + Math.random() * 3;
+        const randomSegment = Math.floor(Math.random() * segments);
+        const targetAngle = spins * 2 * Math.PI + randomSegment * segmentAngle;
+        const duration = 4000;
+        const startTime = performance.now();
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function for smooth deceleration
+            const easeOut = t => 1 - Math.pow(1 - t, 3);
+            currentRotation = targetAngle * easeOut(progress);
+
+            canvas.style.transform = `rotate(${-currentRotation}rad)`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                isSpinning = false;
+                spinButton.disabled = false;
+
+                const selectedCoupon = coupons[randomSegment];
+                couponCodeInput.value = selectedCoupon.code;
+
+                resultDiv.innerHTML = `
+                <div class="alert alert-success mt-4 result-animation">
+                    <h4 class="alert-heading">🎉 Congratulations! 🎉</h4>
+                    <p class="mb-0">You won: ${selectedCoupon.description}</p>
+                </div>
+            `;
+
+                claimForm.style.display = 'block';
+
+                // Trigger celebration animation
+                const rect = canvas.getBoundingClientRect();
+                celebrateWin(
+                    rect.left + rect.width / 2,
+                    rect.top + rect.height / 2
+                );
+            }
+        }
+
+        requestAnimationFrame(animate);
+    });
+
+    // Initial draw
+    drawWheel();
+
+    // Responsive resize
+    window.addEventListener('resize', drawWheel);
+</script>
+{% endblock %}

@@ -12,7 +12,21 @@ def admin_dashboard():
         return "Unauthorized", 403
 
     products = db.session.execute(db.select(Product).order_by(Product.name)).scalars().all()
-    return render_template("admin_dashboard.html", products=products)
+    # Get counts for each season
+    spring_count = sum(1 for p in products if p.season_name == "spring" and p.in_season)
+    summer_count = sum(1 for p in products if p.season_name == "summer" and p.in_season)
+    autumn_count = sum(1 for p in products if p.season_name == "fall" and p.in_season)
+    winter_count = sum(1 for p in products if p.season_name == "winter" and p.in_season)
+    all_season_count = sum(1 for p in products if p.season_name == "all season" and p.in_season)
+
+    
+    return render_template("admin_dashboard.html", 
+                         products=products,
+                         spring_count=spring_count,
+                         summer_count=summer_count,
+                         autumn_count=autumn_count,
+                         winter_count=winter_count,
+                         all_season_count=all_season_count)
 
 
 @admin_bp.route("/toggle_season/<int:product_id>")
@@ -41,4 +55,25 @@ def turn_all_out_of_season():
         product.in_season = False
     db.session.commit()
 
+    return redirect(url_for("admin.admin_dashboard"))
+
+
+@admin_bp.route("/toggle_season_group/<string:season>")
+@login_required
+def toggle_season_group(season):
+    if not getattr(current_user, "is_admin", False):
+        return "Unauthorized", 403
+
+    # Get all products for the specified season
+    stmt = db.select(Product).where(Product.season_name == season.lower())
+    products = db.session.execute(stmt).scalars().all()
+    
+    # Check if any products are in season to determine the toggle action
+    any_in_season = any(p.in_season for p in products)
+    
+    # Toggle all products of this season
+    for product in products:
+        product.in_season = not any_in_season
+    
+    db.session.commit()
     return redirect(url_for("admin.admin_dashboard"))

@@ -1,0 +1,5 @@
+code,description,minimum_purchase,discount_amount,is_percent,active
+SAVE50,$50 off any order,100,50,False,True
+SAVE25,$25 off orders over $50,50,25,False,True
+PERCENT10,10% off any order,20,10,True,True
+SAVE2,$2 off any order,0,2,False,True

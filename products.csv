@@ -1,74 +1,71 @@
-name,price,available,category,in_season,seasonal,season
-apple,1.49,10,produce,True,True,fall
-bananas,3.49,5,produce,False,False,all season
-lemon,1.00,5,produce,False,False,winter
-orange,1.19,0,produce,False,True,winter
-raspberries,7.99,10,produce,True,True,summer
-potato,1.49,22,produce,False,False,fall
-onions,3.99,12,produce,False,False,fall
-tomato,2.99,25,produce,True,True,summer
-cucumber,2.49,15,produce,True,True,summer
-bell pepper,3.29,18,produce,True,True,summer
-carrot,1.29,40,produce,True,True,fall
-broccoli,2.79,8,produce,True,True,fall
-lettuce,2.99,30,produce,True,True,spring
-grapes,5.99,12,produce,True,True,fall
-watermelon,6.99,4,produce,True,True,summer
-blueberries,6.49,20,produce,True,True,summer
-strawberries,5.99,14,produce,True,True,summer
-asparagus,4.99,10,produce,True,True,spring
-zucchini,2.99,18,produce,True,True,summer
-radish,1.89,20,produce,True,True,spring
-corn,3.49,12,produce,True,True,summer
-bread,1.59,50,bakery,False,False,all season
-baguette,2.49,30,bakery,False,False,all season
-croissant,1.99,25,bakery,False,False,all season
-muffin,2.79,20,bakery,False,False,all season
-donut,1.89,15,bakery,False,False,all season
-chicken breast,10.78,3,deli,False,False,all season
-chicken thigh,8.99,5,deli,False,False,all season
-parma ham,6.99,2400,deli,False,False,all season
-ground beef,6.99,10,deli,False,False,all season
-eggs,4.49,24,deli,False,False,all season
-turkey slices,5.99,10,deli,False,False,all season
-salami,7.99,12,deli,False,False,all season
-bacon,9.49,20,deli,False,False,all season
-cheese,8.99,9,dairy,False,False,all season
-goat cheese,11.99,9,dairy,False,False,all season
-milk,3.49,0,dairy,False,False,all season
-butter,4.99,15,dairy,False,False,all season
-yogurt,2.79,25,dairy,False,False,all season
-whipping cream,3.99,10,dairy,False,False,all season
-ice cream,6.99,18,dairy,False,False,all season
-almond milk,4.49,12,dairy,False,False,all season
-oat milk,5.29,10,dairy,False,False,all season
-tofu,3.99,20,plant-based,False,False,all season
-soy milk,4.19,15,plant-based,False,False,all season
-vegan cheese,5.99,8,plant-based,False,False,all season
-tempeh,4.99,10,plant-based,False,False,all season
-seitan,6.49,5,plant-based,False,False,all season
-cereal,5.99,30,pantry,False,False,all season
-pasta,2.49,50,pantry,False,False,all season
-rice,3.99,40,pantry,False,False,all season
-beans,1.99,60,pantry,False,False,all season
-olive oil,8.99,15,pantry,False,False,all season
-peanut butter,4.79,20,pantry,False,False,all season
-coffee,9.99,12,beverages,False,False,all season
-tea,5.99,18,beverages,False,False,all season
-juice,3.49,25,beverages,False,False,all season
-soda,1.99,50,beverages,False,False,all season
-banana,1.29,10,produce,True,True,all season
-cake,5.49,5,bakery,False,False,all season
-cauliflower,2.79,10,produce,True,True,spring
-cherries,6.49,8,produce,True,True,summer
-chicken,9.99,5,deli,False,False,all season
-chocolate,3.49,20,bakery,False,False,all season
-cookies,2.49,15,bakery,False,False,all season
-jalapeno,2.19,10,produce,True,True,summer
-kiwi,3.29,10,produce,True,True,all season
-pear,2.49,10,produce,True,True,fall
-pie,4.49,8,bakery,False,False,all season
-pumpkin,3.99,10,produce,True,True,fall
-ribs,12.99,4,deli,False,False,all season
-steak,14.99,6,deli,False,False,all season
-sword,19.99,2,deli,False,False,all season
+name,price,available,category,in_season,season
+apple,1.49,10,produce,True,fall
+asparagus,4.99,10,produce,True,spring
+banana,1.29,10,produce,True,all season
+bananas,3.49,5,produce,False,all season
+bell pepper,3.29,18,produce,True,summer
+blueberries,6.49,20,produce,True,summer
+broccoli,2.79,8,produce,True,spring
+brussels sprouts,3.29,15,produce,True,winter
+butternut squash,3.99,12,produce,True,winter
+cabbage,2.59,20,produce,True,winter
+cake,5.49,5,bakery,False,all season
+carrot,1.29,40,produce,True,fall
+cauliflower,2.79,10,produce,True,spring
+cereal,5.99,30,pantry,False,all season
+cheese,8.99,9,dairy,False,all season
+cherries,6.49,8,produce,True,summer
+chicken,9.99,5,deli,False,all season
+chicken breast,10.78,3,deli,False,all season
+chicken thigh,8.99,5,deli,False,all season
+chocolate,3.49,20,bakery,False,all season
+coffee,9.99,12,beverages,False,all season
+cookies,2.49,15,bakery,False,all season
+corn,3.49,12,produce,True,summer
+cucumber,2.49,15,produce,True,summer
+donut,1.89,15,bakery,False,all season
+eggs,4.49,24,deli,False,all season
+goat cheese,11.99,9,dairy,False,all season
+grapes,5.99,12,produce,True,fall
+ground beef,6.99,10,deli,False,all season
+ice cream,6.99,18,dairy,False,all season
+jalapeno,2.19,10,produce,True,summer
+juice,3.49,25,beverages,False,all season
+kiwi,3.29,10,produce,True,all season
+lemon,1.00,5,produce,False,winter
+lettuce,2.99,30,produce,True,spring
+milk,3.49,0,dairy,False,all season
+muffin,2.79,20,bakery,False,all season
+oat milk,5.29,10,dairy,False,all season
+olive oil,8.99,15,pantry,False,all season
+onions,3.99,12,produce,False,fall
+orange,1.19,0,produce,False,winter
+parma ham,6.99,2400,deli,False,all season
+parsnips,2.99,25,produce,True,winter
+pasta,2.49,50,pantry,False,all season
+peanut butter,4.79,20,pantry,False,all season
+pear,2.49,10,produce,True,fall
+pie,4.49,8,bakery,False,all season
+potato,1.49,22,produce,False,fall
+pumpkin,3.99,10,produce,True,fall
+radish,1.89,20,produce,True,spring
+raspberries,7.99,10,produce,True,summer
+rice,3.99,40,pantry,False,all season
+ribs,12.99,4,deli,False,all season
+salami,7.99,12,deli,False,all season
+seitan,6.49,5,plant-based,False,all season
+soda,1.99,50,beverages,False,all season
+soy milk,4.19,15,plant-based,False,all season
+steak,14.99,6,deli,False,all season
+strawberries,5.99,14,produce,True,summer
+sword,19.99,2,deli,False,all season
+tea,5.99,18,beverages,False,all season
+tempeh,4.99,10,plant-based,False,all season
+tofu,3.99,20,plant-based,False,all season
+tomato,2.99,25,produce,True,summer
+turnips,1.89,30,produce,True,winter
+turkey slices,5.99,10,deli,False,all season
+vegan cheese,5.99,8,plant-based,False,all season
+watermelon,6.99,4,produce,True,summer
+whipping cream,3.99,10,dairy,False,all season
+zucchini,2.99,18,produce,True,summer

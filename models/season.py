@@ -11,7 +11,6 @@ class Season(db.Model):
     def __repr__(self):
         return f"{self.id}: {self.name}"
     
-
     def to_json(self):
         output = {
             "id": self.id,

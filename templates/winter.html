@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block pagetitle %}Winter Products{% endblock %}
+{% block content %}
+
+<style>
+    .winter-theme {
+        background: linear-gradient(120deg, #b3e0ff 0%, #6699cc 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .winter-header {
+        color: #ffffff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-footer {
+        background-color: rgba(102, 153, 204, 0.1);
+    }
+</style>
+
+<div class="winter-theme">
+    <h2 class="winter-header mb-4">❄️ Winter Collection</h2>
+    <p class="lead text-white">Discover our cozy winter selection! Perfect for those chilly days and festive moments.
+    </p>
+</div>
+
+{% if current_user.is_authenticated %}
+<a class="btn btn-info mb-4" href="{{ url_for('cart.generate_cart') }}">
+    Generate Winter Cart
+</a>
+{% endif %}
+
+{% if products %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="position-relative">
+                <img src="./static/images/{{ product.name }}.jpg" class="card-img-top"
+                    style="height: 300px; object-fit: cover;" alt="{{ product.name }}">
+                {% if product.in_season %}
+                <span class="position-absolute top-0 end-0 badge bg-info text-dark m-2">In Season</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('products.individual_product_page',id=product.id)}}" class="text-decoration-none">
+                    <h5 class="card-title text-info">{{ product.name }}</h5>
+                </a>
+                <p class="card-text">
+                    <strong>Price:</strong> ${{ product.price }}<br />
+                    <strong>Available:</strong> {{ product.available }}
+                </p>
+                {% if product.available > 0 %}
+                <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-outline-info">Add to Cart</a>
+                {% else %}
+                <button class="btn btn-outline-secondary" disabled>Out of Stock</button>
+                {% endif %}
+            </div>
+            {% if product.category %}
+            <div class="card-footer text-muted">
+                Category: {{ product.category.name }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Our winter collection is warming up! Please check back later.</p>
+{% endif %}
+
+{% endblock %}
