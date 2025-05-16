@@ -69,7 +69,7 @@ def test_category(db):
 
 @pytest.fixture
 def test_season(db):
-    season = Season(name="Test Season")
+    season = Season(name="Test Season", active=True)
     db.session.add(season)
     db.session.commit()
     return season
