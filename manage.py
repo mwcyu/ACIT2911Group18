@@ -5,7 +5,9 @@ from datetime import datetime as dt, timedelta
 from db import db
 from models import Customer, Category, Product, Order, ProductOrder, Season, Coupon
 from models.customerCoupon import customer_coupons
-from app import app
+from app import create_app
+
+app = create_app()
 
 def create_tables():
     db.create_all()
