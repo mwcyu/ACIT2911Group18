@@ -94,6 +94,8 @@ def toggle_active_season(season):
     for s in seasons:
         s.active = False
     
+    # hi
+    
     if season == "default":
         return redirect(url_for("home_page"))
 
