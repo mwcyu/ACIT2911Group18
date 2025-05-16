@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_login import LoginManager, login_required, current_user
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 
 from db import db
-from models import Customer, Category, Product, Coupon
+from models import Customer, Category, Product, Coupon, Season
 
 # Load .env variables
 load_dotenv()
@@ -69,6 +69,11 @@ app.config['GITHUB_OAUTH_CLIENT'] = github
 def home_page():
     categories = db.session.execute(db.select(Category)).scalars()
     products = db.session.execute(db.select(Product).where(Product.in_season == True)).scalars()
+    active_season = db.session.execute(db.select(Season).where(Season.active == True)).scalar_one_or_none()
+        
+    if active_season:
+        return redirect(url_for(f"{active_season.name.lower()}_page"))
+
     return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
 @app.route("/spring")
@@ -84,7 +89,7 @@ def summer_page():
     return render_template("summer.html", categories=categories, current_user=current_user, products=products)
 
 @app.route("/fall")
-def autumn_page():
+def fall_page():
     categories = db.session.execute(db.select(Category)).scalars()
     products = db.session.execute(db.select(Product).where(Product.season_name == "fall")).scalars()
     return render_template("fall.html", categories=categories, current_user=current_user, products=products)

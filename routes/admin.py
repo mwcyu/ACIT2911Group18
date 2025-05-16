@@ -1,7 +1,7 @@
-from flask import Blueprint, redirect, url_for, request, render_template
+from flask import Blueprint, redirect, url_for, request, render_template, flash
 from flask_login import login_required, current_user, fresh_login_required
 from db import db
-from models import Product
+from models import Product, Season
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -18,6 +18,8 @@ def admin_dashboard():
     autumn_count = sum(1 for p in products if p.season_name == "fall" and p.in_season)
     winter_count = sum(1 for p in products if p.season_name == "winter" and p.in_season)
     all_season_count = sum(1 for p in products if p.season_name == "all season" and p.in_season)
+    
+    seasons = db.session.execute(db.select(Season)).scalars().all()
 
     
     return render_template("admin_dashboard.html", 
@@ -26,7 +28,8 @@ def admin_dashboard():
                          summer_count=summer_count,
                          autumn_count=autumn_count,
                          winter_count=winter_count,
-                         all_season_count=all_season_count)
+                         all_season_count=all_season_count,
+                         seasons=seasons)
 
 
 @admin_bp.route("/toggle_season/<int:product_id>")
@@ -77,3 +80,26 @@ def toggle_season_group(season):
     
     db.session.commit()
     return redirect(url_for("admin.admin_dashboard"))
+
+
+@admin_bp.route("/toggle_active_season/<string:season>")
+@login_required
+def toggle_active_season(season):
+    if not getattr(current_user, "is_admin", False):
+        return "Unauthorized", 403
+
+    # Deactivate all seasons
+    stmt = db.select(Season)
+    seasons = db.session.execute(stmt).scalars().all()
+    for s in seasons:
+        s.active = False
+
+    # Activate the selected season
+    selected_season = db.session.scalar(db.select(Season).where(Season.name == season))
+    if selected_season:
+        selected_season.active = True
+        db.session.commit()
+    else:
+        flash("Season not found.", "danger")
+
+    return redirect(url_for("home_page"))

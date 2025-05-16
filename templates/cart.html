@@ -2,7 +2,20 @@
 {% block content %}
 
 <div class="container my-4">
+  {% if current_user.active_cart_id %}
+  {% set active_cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list | first %}
+  {% endif %}
   <h2 class="mb-4">🛒 Your Cart</h2>
+
+  {% if active_cart %}
+  <form method="POST" action="{{ url_for('cart.rename_cart', order_id=active_cart.id) }}"
+    class="mb-3 d-flex align-items-center gap-2">
+    <label for="cartName" class="form-label fw-bold mb-0">Cart Name:</label>
+    <input type="text" id="cartName" name="new_name" class="form-control"
+      value="{{ active_cart.name or 'Untitled Cart' }}" required style="max-width: 300px;">
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Rename</button>
+  </form>
+  {% endif %}
 
   {% if cart_items %}
   <div class="table-responsive">
@@ -12,6 +25,7 @@
           <th>Product</th>
           <th>Price</th>
           <th>Quantity</th>
+          <th>Inventory</th>
           <th>Subtotal</th>
           <th>Actions</th>
         </tr>
@@ -28,6 +42,9 @@
                 class="form-control form-control-sm me-2" style="width: 70px;" />
               <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
             </form>
+          </td>
+          <td>
+            {{ item.available }}
           </td>
           <td>${{ "%.2f"|format(item.subtotal) }}</td>
           <td>
@@ -73,7 +90,10 @@
     {% for order in current_user.orders %}
     {% if order.completed is none %}
     <li class="list-group-item d-flex justify-content-between align-items-center">
-      Order #{{ order.id }} <small class="text-muted">({{ order.created.strftime('%Y-%m-%d %H:%M') }})</small>
+      <div>
+        <strong>{{ order.name or "Order #" ~ order.id }}</strong>
+        <small class="text-muted d-block">{{ order.created.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
       {% if order.id != current_user.active_cart_id %}
       <a href="{{ url_for('cart.switch_pending_order', order_id=order.id) }}"
         class="btn btn-sm btn-outline-secondary">Switch</a>
@@ -81,6 +101,7 @@
       <button class="btn btn-sm btn-outline-primary">Active</button>
       {% endif %}
     </li>
+
 
 
     {% endif %}

@@ -12,6 +12,7 @@ class Order(db.Model):
     created = db.mapped_column(db.DateTime, nullable=False, default=db.func.now())
     completed = db.mapped_column(db.DateTime, nullable=True, default=None)
     amount = db.mapped_column(db.Float(6,2), nullable=True, default=None)
+    name = db.mapped_column(db.String(100), nullable=True, default="Untitled Cart")
 
     items = db.relationship('ProductOrder', back_populates="order")
     customer = db.relationship('Customer', back_populates='orders')

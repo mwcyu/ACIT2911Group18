@@ -119,6 +119,7 @@ def view_cart():
             "name": product.name,
             "price": float(product.price),
             "quantity": item.quantity,
+            "inventory": item.product.available,
             "subtotal": round(float(product.price)*item.quantity,2)
         })
     # Coupon logic for display
@@ -136,6 +137,7 @@ def view_cart():
                 discount = applied_coupon.discount_amount
     return render_template(
         "cart.html",
+        active_cart=order,
         cart_items=cart_items,
         total=total,
         applied_coupon=applied_coupon,
@@ -254,3 +256,19 @@ def switch_pending_order(order_id: int):
     flash(f"Switched to order #{order.id}", "info")
     return redirect(request.referrer)
 
+@cart_bp.route("/rename/<int:order_id>", methods=["POST"])
+@login_required
+def rename_cart(order_id):
+    order = db.get_or_404(Order, order_id)
+    if order.customer_id != current_user.id or order.completed:
+        return "Unauthorized", 403
+
+    new_name = request.form.get("new_name", "").strip()
+    if new_name:
+        order.name = new_name
+        db.session.commit()
+        flash("Cart name updated!", "success")
+    else:
+        flash("Cart name cannot be empty.", "danger")
+
+    return redirect(url_for("cart.view_cart"))

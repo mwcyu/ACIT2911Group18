@@ -58,8 +58,25 @@ Admin Dashboard
   </div>
 </div>
 
+
+<div class="mb-4">
+  <h3 class="mb-3">Home Page Theme Control</h3>
+  <div class="btn-group" role="group" aria-label="Season Toggle Buttons">
+    {% for s in seasons %}
+    {% if s.name != "all season"%}
+    <a href="{{ url_for('admin.toggle_active_season', season=s.name) }}"
+      class="btn btn-outline-primary{% if s.active %} active{% endif %}">
+      {{ s.name.capitalize() }}
+    </a>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+
 <div class="mb-3">
-  <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of Season</a>
+  <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of
+    Season</a>
 </div>
 
 <table class="table table-striped">
