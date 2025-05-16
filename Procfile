@@ -1,1 +1,1 @@
-web: python manage.py && gunicorn app:app
+web: python manage.py reset && gunicorn app:create_app()
