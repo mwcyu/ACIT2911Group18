@@ -6,6 +6,9 @@ load_dotenv()  # Load from .env
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "default_key")
     
+    # Database
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    
     # Mail config
     MAIL_SERVER = os.getenv("MAIL_SERVER", "localhost")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 25))

@@ -254,7 +254,7 @@ def switch_pending_order(order_id: int):
     db.session.commit()
 
     flash(f"Switched to order #{order.id}", "info")
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for("dashboard_page"))
 
 @cart_bp.route("/rename/<int:order_id>", methods=["POST"])
 @login_required
