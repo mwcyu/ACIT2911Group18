@@ -89,14 +89,13 @@ def toggle_active_season(season):
         return "Unauthorized", 403
 
     # Deactivate all seasons
-    stmt = db.select(Season)
-    seasons = db.session.execute(stmt).scalars().all()
+    seasons = db.session.execute(db.select(Season)).scalars().all()
     for s in seasons:
         s.active = False
-    
-    # hi
-    
+
+    # If "default", commit the changes and return
     if season == "default":
+        db.session.commit()
         return redirect(url_for("home_page"))
 
     # Activate the selected season
