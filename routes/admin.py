@@ -93,6 +93,9 @@ def toggle_active_season(season):
     seasons = db.session.execute(stmt).scalars().all()
     for s in seasons:
         s.active = False
+    
+    if season == "default":
+        return redirect(url_for("home_page"))
 
     # Activate the selected season
     selected_season = db.session.scalar(db.select(Season).where(Season.name == season))
