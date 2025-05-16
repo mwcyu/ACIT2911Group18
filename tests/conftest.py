@@ -2,7 +2,7 @@
 import pytest
 from app import app as flask_app
 from db import db as _db
-from models import Customer, Category, Product
+from models import Customer, Category, Product, Season
 from flask_login import LoginManager, login_user
 
 def assert_flashed_message(response, message: str, category: str = None):
@@ -48,14 +48,21 @@ def test_category(db):
     return category
 
 @pytest.fixture
-def test_product(db, test_category):
+def test_season(db):
+    season = Season(name="Test Season")
+    db.session.add(season)
+    db.session.commit()
+    return season
+
+@pytest.fixture
+def test_product(db, test_category, test_season):
     product = Product(
         name="Test Product",
         price=9.99,
         available=10,
-        seasonal=True,
         in_season=True,
-        category=test_category
+        category=test_category,
+        season=test_season
     )
     db.session.add(product)
     db.session.commit()
