@@ -4,6 +4,11 @@ from app import app as flask_app
 from db import db as _db
 from models import Customer, Category, Product, Season
 from flask_login import LoginManager, login_user
+from datetime import datetime, UTC
+import email_utils
+
+from flask import session
+
 
 def assert_flashed_message(response, message: str, category: str = None):
     """Check for flashed messages in response HTML"""
@@ -88,3 +93,16 @@ def logged_in_client(client, test_user, app):
         session["_user_id"] = str(test_user.id)
 
     return client
+
+@pytest.fixture(autouse=True)
+def stub_generate_and_send_otp(monkeypatch):
+    """
+    Replace generate_and_send_otp() so that it simply
+    writes a deterministic 6-digit code into Flask's session.
+    """
+    def fake_generate_and_send_otp(email_address):
+        session['2fa_otp'] = '123456'
+        # expire 5 minutes from now
+        session['2fa_expires'] = datetime.now(UTC).timestamp() + 300
+
+    monkeypatch.setattr(email_utils, 'generate_and_send_otp', fake_generate_and_send_otp)

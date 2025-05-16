@@ -13,7 +13,7 @@ from forms import (
 )
 from models import Customer
 from db import db
-from datetime import datetime
+from datetime import datetime, UTC
 
 auth_bp = Blueprint("auth", __name__, template_folder="../templates")
 
@@ -200,7 +200,7 @@ def two_factor():
         otp = session.get("2fa_otp")
         expires_ts = session.get("2fa_expires", 0)
 
-        if datetime.utcnow().timestamp() > expires_ts:
+        if datetime.now(UTC).timestamp() > expires_ts:
             flash("Your code has expired. Please try again.", "danger")
             session.pop("2fa_user_id", None)
             session.pop("2fa_purpose", None)
