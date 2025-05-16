@@ -10,10 +10,6 @@ from .products_api import products_api_bp
 api_bp.register_blueprint(products_api_bp, url_prefix="/products")
 # api_bp.register_blueprint
 
-@api_bp.route("/test")
-def example_api():
-    return jsonify(["a", {"example": True, "other": "yes"}, ("value", "123")])
-
 @api_bp.route("/orders/<id>", methods=["PUT"])
 def complete_order_api(id):
     stmt = db.select(Order).where(Order.id == id)
@@ -196,32 +192,6 @@ def orders_by_category_api(name):
     if not orders:
         return jsonify({"error": "this category doesn't exist"})
     return jsonify([order.to_json() for order in orders])
-
-@api_bp.route("/recall")
-def recall_api():
-    stmt = db.select(Customer).where(Customer.orders.any((Order.items.any(ProductOrder.product.has(Product.name == "bread"))).any(Order.completed >= dt(2025,3,20))))
-
-    customers = db.session.execute(stmt).scalars()
-
-    return jsonify([customer.to_json() for customer in customers])
-
-
-@api_bp.route("/recall2")
-def recall2_api():
-    stmt = db.select(Customer).where(Customer.orders.any(Order.items.any(ProductOrder.product.has(Product.name == "milk")))).where(Customer.orders.any(Order.completed >= dt(2025,3,20)))
-
-    customers = db.session.execute(stmt).scalars()
-
-    return jsonify([customer.to_json() for customer in customers])
-
-
-@api_bp.route("/milk")
-def milk_api():
-    
-    stmt = db.select(Customer).where(Customer.orders.any(Order.items.any(ProductOrder.product.has(Product.name == "milk")))).where(Customer.orders.any(Order.completed != None))
-    customers = db.session.execute(stmt).scalars()
-    
-    return jsonify([customer.to_json() for customer in customers])
 
 
 @api_bp.route("/products/create", methods=["POST"])

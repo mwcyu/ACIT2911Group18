@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Two-Factor Authentication</h2>
+<p>Enter the 6-digit code we just emailed you.</p>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.code.label(class="form-label") }}
+        {{ form.code(class="form-control", placeholder="123456") }}
+        {% for err in form.code.errors %}
+        <div class="text-danger">{{ err }}</div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>
+{% endblock %}

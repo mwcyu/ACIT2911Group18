@@ -1,5 +1,6 @@
 from db import db
-from models import Customer, Category, Product, Order, ProductOrder
+from models import Customer, Category, Product, Order, ProductOrder, Season, Coupon
+from models.customerCoupon import customer_coupons
 import random
 
 from app import app
@@ -34,12 +35,35 @@ def csvReader(filename, klass):
                     db.session.add(category_obj)
                 else:
                     category_obj = possible_category
-                    
+                possible_season = db.session.execute(db.select(Season).where(Season.name == item["season"])).scalar()
+                if not possible_season:
+                    season_obj = Season(name=item["season"])
+                    db.session.add(season_obj)
+                else:
+                    season_obj = possible_season
                 item["price"] = float(item["price"])
                 item["available"] = int(item["available"])
-                item["seasonal"] = str_to_bool(item.get("seasonal", False))
                 item["in_season"] = str_to_bool(item.get("in_season", False))
                 item["category"] = category_obj
+                item["season"] = season_obj
+                db.session.add(klass(**item))
+            elif klass == Customer:
+                # Hash the password before creating the Customer
+                password = item.pop("password", None)
+                customer = klass(**item)
+                if password:
+                    customer.set_password(password)
+                db.session.add(customer)
+            elif klass == Coupon:
+                # Convert types for Coupon fields
+                item["minimum_purchase"] = float(item["minimum_purchase"]) if item["minimum_purchase"] else 0.0
+                item["discount_amount"] = float(item["discount_amount"])
+                item["is_percent"] = str_to_bool(item["is_percent"])
+                item["active"] = str_to_bool(item["active"])
+                db.session.add(klass(**item))
+            elif klass == customer_coupons:
+                item["customer_id"] = int(item["customer_id"])
+                item["coupon_id"] = int(item["coupon_id"])
                 db.session.add(klass(**item))
             else:
                 db.session.add(klass(**item))
@@ -64,32 +88,52 @@ def make_orders():
 # This is for making fake completed orders
 def make_completed_orders():
     for _ in range(50):
-        random_customer = db.session.execute(db.select(Customer).order_by(db.func.random())).scalar()
-        random_date = dt.now() - timedelta(days=randint(1, 40), hours=randint(0, 15), minutes=randint(0, 30))
+        random_customer = db.session.execute(
+            db.select(Customer).order_by(db.func.random())
+        ).scalar()
 
-        is_completed = random.random() < 0.7  # 70% chance
-        completed_time = None
+        # Generate a random creation date up to 40 days ago
+        created_date = dt.now() - timedelta(
+            days=randint(1, 40), hours=randint(0, 15), minutes=randint(0, 59)
+        )
+
+        # 70% chance of being completed
+        is_completed = random.random() < 0.7
+
+        # If completed, set a completion time 1–8 hours after creation
+        completed_date = None
         if is_completed:
-            # Ensure completed is after created time
-            completed_time = random_date + timedelta(
-                hours=randint(0,15),  # Completed within 1 to 24 hours after creation
-                minutes=randint(0, 30)
+            completed_date = created_date + timedelta(
+                hours=randint(1, 8), minutes=randint(0, 59)
             )
 
-        current_order = Order(customer=random_customer, created=random_date, completed = completed_time)
-        
+        # Create the order
+        order = Order(
+            customer=random_customer,
+            created=created_date,
+            completed=completed_date
+        )
+        db.session.add(order)
+        db.session.flush()  # ensure order.id is available
 
-        db.session.add(current_order)
+        # Add random products
+        num_items = randint(4, 6)
+        products = db.session.execute(
+            db.select(Product).order_by(db.func.random()).limit(num_items)
+        ).scalars()
 
-        num_product_orders = random.randint(4, 6)
+        for product in products:
+            quantity = randint(1, 5)
+            db.session.add(ProductOrder(product=product, quantity=quantity, order=order))
 
-        random_prods = db.session.execute(db.select(Product).order_by(db.func.random()).limit(num_product_orders)).scalars()
-        for prod in random_prods:
-            quantity = random.randint(4, 6)
-            db.session.add(ProductOrder(product=prod, quantity=quantity, order=current_order))
-        
-        
+        # If completed, estimate total and reduce inventory
+        if is_completed:
+            order.amount = order.estimate()
+            for item in order.items:
+                item.product.available = max(0, item.product.available - item.quantity)
+
     db.session.commit()
+
 
     
 # if __name__ == "__main__":
@@ -107,6 +151,7 @@ if __name__ == "__main__":
         create_tables()
         csvReader("products.csv", Product)
         csvReader("customers.csv", Customer)
+        csvReader("coupons.csv", Coupon)
         make_orders()
         make_completed_orders()
         # obj = Category(name="dairy") 
@@ -122,4 +167,4 @@ if __name__ == "__main__":
         # make_completed_orders()
         # obj = Category(name="dairy") 
         # db.session.add(obj) 
-        # db.session.commit() 
+        # db.session.commit()

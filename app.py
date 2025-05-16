@@ -1,89 +1,166 @@
-# Import necessary modules and extensions
-from flask import Flask, render_template  # Flask framework and template rendering
-from flask_login import LoginManager, login_required, current_user  # User authentication and session management
-from flask_mail import Mail  # Email handling
-from pathlib import Path  # File path management
+import os
+from pathlib import Path
+from flask import Flask, render_template, redirect, url_for
+from flask_login import LoginManager, login_required, current_user
+from flask_mail import Mail
+from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 
-# Import database and models
-from db import db  # SQLAlchemy database instance
-from models import Customer, Category, Product # Database models for Customer and Category
+from db import db
+from models import Customer, Category, Product, Coupon, Season
 
-# Import blueprints for modular route handling
+# Load .env variables
+load_dotenv()
+
+# --- Flask App Config ---
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'fallback-secret')
+app.config.from_object("config.Config")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"
+app.instance_path = Path(".").resolve()
+
+# --- Extensions ---
+db.init_app(app)
+mail = Mail(app)
+
+# Flask-Login
+login_manager = LoginManager()
+login_manager.login_view = "auth.login"
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    stmt = db.select(Customer).where(Customer.id == user_id)
+    return db.session.execute(stmt).scalar_one_or_none()
+
+# --- Blueprints ---
 from routes import (
     api_bp, products_bp, customers_bp, categories_bp,
     orders_bp, practice_bp, cart_bp, auth_bp, admin_bp
 )
 
-# Initialize Flask app and configure settings
-app = Flask(__name__)
-app.config.from_object("config.Config")  # Load configuration from a config class
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"  # Set SQLite database URI
-app.instance_path = Path(".").resolve()  # Set the instance path to the current directory
+app.register_blueprint(api_bp, url_prefix="/api")
+app.register_blueprint(products_bp, url_prefix="/products")
+app.register_blueprint(orders_bp, url_prefix="/orders")
+app.register_blueprint(categories_bp, url_prefix="/categories")
+app.register_blueprint(customers_bp, url_prefix="/customers")
+app.register_blueprint(practice_bp, url_prefix="/practice")
+app.register_blueprint(cart_bp, url_prefix="/cart")
+app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(admin_bp)
 
-# Initialize Flask-Mail for email functionality
-mail = Mail(app)
+# --- GitHub OAuth ---
+oauth = OAuth(app)
+github = oauth.register(
+    name='github',
+    client_id=os.getenv('GITHUB_CLIENT_ID'),
+    client_secret=os.getenv('GITHUB_CLIENT_SECRET'),
+    access_token_url='https://github.com/login/oauth/access_token',
+    authorize_url='https://github.com/login/oauth/authorize',
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user:email'},
+)
 
-# Initialize the database with the Flask app
-db.init_app(app)
+app.config['GITHUB_OAUTH_CLIENT'] = github
 
-# Initialize Flask-Login for user authentication
-login_manager = LoginManager()
-login_manager.login_view = "auth.login"  # Redirect unauthenticated users to the login page
-login_manager.init_app(app)  # Attach the login manager to the Flask app
-
-# Define a user loader function for Flask-Login
-@login_manager.user_loader
-def load_user(user_id):
-    # Query the database to load the user by their ID
-    stmt = db.select(Customer).where(Customer.id == user_id)
-    return db.session.execute(stmt).scalar_one_or_none()
-
-# Register blueprints to organize routes into modules
-app.register_blueprint(api_bp, url_prefix="/api")  # API routes
-app.register_blueprint(products_bp, url_prefix="/products")  # Product-related routes
-app.register_blueprint(orders_bp, url_prefix="/orders")  # Order-related routes
-app.register_blueprint(categories_bp, url_prefix="/categories")  # Category-related routes
-app.register_blueprint(customers_bp, url_prefix="/customers")  # Customer-related routes
-app.register_blueprint(practice_bp, url_prefix="/practice")  # Practice-related routes
-app.register_blueprint(cart_bp, url_prefix="/cart")  # Shopping cart routes
-app.register_blueprint(auth_bp, url_prefix="/auth")  # Authentication routes
-app.register_blueprint(admin_bp)  # Admin-related routes (no prefix)
-
-# Define the home page route
+# --- Routes ---
 @app.route("/")
+@login_required
 def home_page():
-    # Query all categories from the database
-    stmt = db.select(Category)
-    categories = db.session.execute(stmt).scalars()
-    # Render the base.html template with categories and the current user
-    
-    stmt2 = db.select(Product).where(Product.in_season == True)
-    products = db.session.execute(stmt2).scalars()
-    
-    return render_template("base.html", categories=categories, current_user=current_user, products=products)
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.in_season == True)).scalars()
+    active_season = db.session.execute(db.select(Season).where(Season.active == True)).scalar_one_or_none()
+        
+    if active_season:
+        return redirect(url_for(f"{active_season.name.lower()}_page"))
 
-@app.route("/home")
-def home_page2():
-    # Query all categories from the database
-    stmt = db.select(Category)
-    categories = db.session.execute(stmt).scalars()
-    # Render the base.html template with categories and the current user
-    
-    stmt2 = db.select(Product).where(Product.in_season == True)
-    products = db.session.execute(stmt2).scalars()
-    
     return render_template("home.html", categories=categories, current_user=current_user, products=products)
 
-# Define the dashboard page route (requires login)
+@app.route("/spring")
+def spring_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "spring")).scalars()
+    return render_template("spring.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/summer")
+def summer_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "summer")).scalars()
+    return render_template("summer.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/fall")
+def fall_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "fall")).scalars()
+    return render_template("fall.html", categories=categories, current_user=current_user, products=products)
+
+@app.route("/winter")
+def winter_page():
+    categories = db.session.execute(db.select(Category)).scalars()
+    products = db.session.execute(db.select(Product).where(Product.season_name == "winter")).scalars()
+    return render_template("winter.html", categories=categories, current_user=current_user, products=products)
+
 @app.route("/dashboard")
 @login_required
 def dashboard_page():
-    # Retrieve the current user's orders
-    orders = current_user.orders
-    # Render the dashboard.html template with the user's orders
-    return render_template("dashboard.html", orders=orders)
+    # Get user's coupons
+    user_coupons = current_user.coupons
+    return render_template("dashboard.html", orders=current_user.orders, coupons=user_coupons)
 
-# Run the application in debug mode on port 8888
+@app.route("/spin-wheel", methods=["GET", "POST"])
+@login_required
+def spin_wheel():
+    from flask import request, redirect, url_for, flash
+    if request.method == "POST":
+        coupon_code = request.form.get("coupon_code")
+        if coupon_code != 'NO_PRIZE':
+            coupon = db.session.execute(
+                db.select(Coupon).where(Coupon.code == coupon_code, Coupon.active == True)
+            ).scalar_one_or_none()
+            
+            if not coupon:
+                flash("Invalid coupon code.", "danger")
+            elif coupon in current_user.coupons:
+                flash("You already have this coupon!", "info")
+            else:
+                current_user.coupons.append(coupon)
+                db.session.commit()
+                flash(f"Congratulations! {coupon.code} coupon has been added to your account!", "success")
+                return redirect(url_for("dashboard_page"))
+        
+        return redirect(url_for("spin_wheel"))
+
+    # Get all active coupons for the wheel
+    wheel_coupons = db.session.execute(
+        db.select(Coupon)
+        .where(Coupon.active == True)
+    ).scalars().all()
+    
+    # Convert coupons to dict for JSON serialization
+    wheel_coupons = [{
+        'code': c.code,
+        'description': c.description,
+        'discount_amount': float(c.discount_amount),
+        'is_percent': c.is_percent,
+        'minimum_purchase': float(c.minimum_purchase) if c.minimum_purchase else None
+    } for c in wheel_coupons]
+
+    return render_template("spin_wheel.html", wheel_coupons=wheel_coupons)
+
+@app.route("/apply-coupon", methods=["POST"])
+@login_required
+def apply_coupon():
+    from flask import request, redirect, url_for, flash
+    coupon_code = request.form.get("coupon_code")
+    # Here you would validate the coupon and attach it to the user's session/cart
+    # For now, just flash a message and redirect to cart/checkout
+    flash(f"Coupon {coupon_code} applied!", "success")
+    # You should implement logic to store the coupon for the user's checkout
+    return redirect(url_for("cart.generate_cart"))
+
+@app.route('/game')
+def game():
+    return render_template('game.html')
+
 if __name__ == "__main__":
-    app.run(debug=True,
-            port=8888)
+    app.run(debug=True, port=8888)

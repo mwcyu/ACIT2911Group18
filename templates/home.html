@@ -2,14 +2,97 @@
 {% block pagetitle %}Home{% endblock %}
 {% block content %}
 
-<h2 class="my-4">Featured Seasonal Products</h2>
+{# <style>
+    .seasons-nav {
+        background: linear-gradient(120deg, #f3f4f6 0%, #e5e7eb 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .season-link {
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+
+    .season-link:hover {
+        transform: translateY(-3px);
+    }
+</style>
+
+<div class="seasons-nav text-center">
+    <h2 class="mb-4">Shop By Season</h2>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('spring_page') }}" class="season-link">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3>🌸 Spring</h3>
+                        <p class="text-muted">Fresh & New Beginnings</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('summer_page') }}" class="season-link">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3>☀️ Summer</h3>
+                        <p class="text-muted">Bright & Refreshing</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('autumn_page') }}" class="season-link">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3>🍂 Autumn</h3>
+                        <p class="text-muted">Cozy & Harvest</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('winter_page') }}" class="season-link">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3>❄️ Winter</h3>
+                        <p class="text-muted">Warm & Festive</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div> #}
+
+<h2 class="mb-4">Featured Seasonal Products</h2>
+
+{% if current_user.is_authenticated %}
+<a class="btn btn-secondary mb-4" href="{{ url_for('cart.generate_cart') }}">
+    Generate Cart
+</a>
+<a class="btn btn-success mb-4 ms-2" href="{{ url_for('spin_wheel') }}">
+    🎁 Spin the Wheel for a Coupon
+</a>
+{% endif %}
+
+{% if current_user["is_admin"] == True%}
+
+{% endif %}
+
+<a class="btn btn-primary mb-4" href="{{ url_for('game') }}">
+    Play for Discount
+</a>
 
 {% if products %}
 <div class="row row-cols-1 row-cols-md-3 g-4">
     {% for product in products %}
     <div class="col">
         <div class="card h-100">
-            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top" alt="{{ product.name }}">
+            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top"
+                style="height: 300px; object-fit: cover;" alt="{{ product.name }}">
             <div class="card-body">
                 <a href="{{ url_for('products.individual_product_page',id=product.id)}}">
                     <h5 class="card-title">{{ product.name }}</h5>

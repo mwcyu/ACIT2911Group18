@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, jsonify, Blueprint, request
+from flask import Flask, render_template, redirect, url_for, jsonify, Blueprint, request, abort
 from models import Customer,Category,Product,Order,ProductOrder
 from pathlib import Path
 from db import db
@@ -23,6 +23,9 @@ def category_detail(name):
 
     stmt2 = db.select(Category).where(Category.name == name)
     data = db.session.execute(stmt2).scalars().first()
+    
+    if data is None:
+        abort(404)
 
 
     return render_template("category.html", products = products, category=data)

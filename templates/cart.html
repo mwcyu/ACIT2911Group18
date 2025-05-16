@@ -1,17 +1,113 @@
-{% extends "base.html" %} {% block content %}
-<h2>Your Cart</h2>
+{% extends "base.html" %}
+{% block content %}
 
-{% if cart_items %}
-<ul class="list-group">
-  {% for item in cart_items %}
-  <li class="list-group-item">
-    {{ item.name }} – ${{ item.price }} × {{ item.quantity }} = ${{
-    item.subtotal }}
-  </li>
-  {% endfor %}
-</ul>
-<p><strong>Total: ${{ total }}</strong></p>
-<p><a href="{{ url_for('cart.checkout_cart') }}"> checkout </a></p>
-{% else %}
-<p>Your cart is empty.</p>
-{% endif %} {% endblock %}
+<div class="container my-4">
+  {% if current_user.active_cart_id %}
+  {% set active_cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list | first %}
+  {% endif %}
+  <h2 class="mb-4">🛒 Your Cart</h2>
+
+  {% if active_cart %}
+  <form method="POST" action="{{ url_for('cart.rename_cart', order_id=active_cart.id) }}"
+    class="mb-3 d-flex align-items-center gap-2">
+    <label for="cartName" class="form-label fw-bold mb-0">Cart Name:</label>
+    <input type="text" id="cartName" name="new_name" class="form-control"
+      value="{{ active_cart.name or 'Untitled Cart' }}" required style="max-width: 300px;">
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Rename</button>
+  </form>
+  {% endif %}
+
+  {% if cart_items %}
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Inventory</th>
+          <th>Subtotal</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart_items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>${{ "%.2f"|format(item.price) }}</td>
+          <td>
+            <form action="{{ url_for('cart.update_cart_item', product_id=item.id) }}" method="post"
+              class="d-flex justify-content-center">
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="0"
+                class="form-control form-control-sm me-2" style="width: 70px;" />
+              <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+            </form>
+          </td>
+          <td>
+            {{ item.available }}
+          </td>
+          <td>${{ "%.2f"|format(item.subtotal) }}</td>
+          <td>
+            <a href="{{ url_for('cart.remove_cart_item', product_id=item.id) }}"
+              class="btn btn-sm btn-outline-danger">Remove</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+    <div>
+      <h4>Total: <span class="text-success">${{ "%.2f"|format(total) }}</span></h4>
+      {% if discount and applied_coupon %}
+      <div class="text-danger">-{{ applied_coupon.code }}: -${{ "%.2f"|format(discount) }}</div>
+      <h5>New Total: <span class="text-success">${{ "%.2f"|format(total - discount) }}</span></h5>
+      {% endif %}
+    </div>
+    <form method="post" action="{{ url_for('cart.apply_coupon') }}" class="d-flex align-items-center gap-2">
+      <select name="coupon_id" class="form-select" style="max-width: 220px;" required>
+        <option value="" disabled selected>Select a coupon</option>
+        {% for coupon in current_user.coupons %}
+        <option value="{{ coupon.id }}">{{ coupon.code }} - {{ coupon.description }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-outline-success">Apply Coupon</button>
+    </form>
+    <a href="{{ url_for('cart.checkout_cart') }}" class="btn btn-lg btn-success">Checkout</a>
+  </div>
+
+  {% else %}
+  <div class="alert alert-info mt-4" role="alert">
+    Your cart is empty. <a href="{{ url_for('home_page') }}" class="alert-link">Start shopping</a>.
+  </div>
+  {% endif %}
+
+  {% if current_user.is_authenticated %}
+  <hr>
+  <h5 class="mt-4">🧾 Switch to a Different Pending Order:</h5>
+  <ul class="list-group mb-4">
+    {% for order in current_user.orders %}
+    {% if order.completed is none %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ order.name or "Order #" ~ order.id }}</strong>
+        <small class="text-muted d-block">{{ order.created.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+      {% if order.id != current_user.active_cart_id %}
+      <a href="{{ url_for('cart.switch_pending_order', order_id=order.id) }}"
+        class="btn btn-sm btn-outline-secondary">Switch</a>
+      {% else %}
+      <button class="btn btn-sm btn-outline-primary">Active</button>
+      {% endif %}
+    </li>
+
+
+
+    {% endif %}
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,4 +1,5 @@
 from db import db
+from decimal import Decimal
 
 
 class Order(db.Model):
@@ -10,7 +11,8 @@ class Order(db.Model):
     # db.func.now() is NOW()
     created = db.mapped_column(db.DateTime, nullable=False, default=db.func.now())
     completed = db.mapped_column(db.DateTime, nullable=True, default=None)
-    amount = db.mapped_column(db.DECIMAL(6,2), nullable=True, default=None)
+    amount = db.mapped_column(db.Float(6,2), nullable=True, default=None)
+    name = db.mapped_column(db.String(100), nullable=True, default="Untitled Cart")
 
     items = db.relationship('ProductOrder', back_populates="order")
     customer = db.relationship('Customer', back_populates='orders')
@@ -23,7 +25,7 @@ class Order(db.Model):
         for item in self.items:
             total += item.quantity * item.product.price
         
-        return round(total,2)
+        return float(round(total,2))
     
     def complete(self):
         products_to_update = []
@@ -36,6 +38,9 @@ class Order(db.Model):
             product["product"].available -= product["removing"]
         self.completed = db.func.now()
         self.amount = self.estimate()
+        
+        if self.customer.active_cart_id == self.id:
+            self.customer.active_cart_id = None
 
     def to_json(self):
         completed = False

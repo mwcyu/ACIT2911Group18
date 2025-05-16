@@ -1,4 +1,6 @@
-from flask import current_app, url_for
+import random
+from datetime import datetime, timedelta
+from flask import current_app, url_for, session
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 
@@ -84,3 +86,23 @@ If you didn't request this, just ignore this message.
 Thanks,
 Your Store Team
 """
+
+def generate_and_send_otp(user_email):
+    # generate a 6-digit code
+    otp = f"{random.randint(0, 999999):06d}"
+    # store in session with expiry (UTC)
+    session['2fa_otp']      = otp
+    session['2fa_expires']  = (datetime.utcnow() + timedelta(minutes=5)).timestamp()
+    # send it
+    msg = Message("Your Login Code", recipients=[user_email])
+    msg.body = f"Your two-factor authentication code is: {otp}\nIt expires in 5 minutes."
+    
+    # Get mail extension from current app
+    mail = current_app.extensions.get("mail")
+    if mail:
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("Failed to send email:", e)
+    else:
+        print("Mail extension not initialized.")

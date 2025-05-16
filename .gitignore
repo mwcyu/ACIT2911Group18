@@ -1,6 +1,17 @@
 /venv/
 /__pycache__/
+<<<<<<< HEAD
 /models/__pycache__/
 /routes/__pycache__/
 *.pyc
 .env
+=======
+/models/__pycache__/*
+/routes/__pycache__/*
+*.pyc
+.env
+__pycache__/
+/my310env/
+/htmlcov/
+.coverage
+>>>>>>> b533136dbdc3b86234ee99ef37a88d0aacb6ca6b

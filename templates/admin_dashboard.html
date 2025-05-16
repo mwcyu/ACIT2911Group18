@@ -7,6 +7,82 @@ Admin Dashboard
 {% block content %}
 <h2 class="my-3">Admin Dashboard</h2>
 
+<div class="mb-4">
+  <h4 class="mb-3">Season Controls</h4>
+  <div class="mb-3 d-flex flex-wrap gap-3" aria-label="Season controls">
+    <a href="{{ url_for('admin.toggle_season_group', season='spring') }}"
+      class="btn btn-outline-success position-relative">
+      🌸 Spring
+      {% if spring_count > 0 %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+        {{ spring_count }}
+      </span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('admin.toggle_season_group', season='summer') }}"
+      class="btn btn-outline-warning position-relative">
+      ☀️ Summer
+      {% if summer_count > 0 %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+        {{ summer_count }}
+      </span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('admin.toggle_season_group', season='fall') }}"
+      class="btn btn-outline-danger position-relative">
+      🍂 Autumn
+      {% if autumn_count > 0 %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ autumn_count }}
+      </span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('admin.toggle_season_group', season='winter') }}"
+      class="btn btn-outline-info position-relative">
+      ❄️ Winter
+      {% if winter_count > 0 %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info">
+        {{ winter_count }}
+      </span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('admin.toggle_season_group', season='all season') }}"
+      class="btn btn-outline-primary position-relative">
+      🔄 All Seasons
+      {% if all_season_count > 0 %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+        {{ all_season_count }}
+      </span>
+      {% endif %}
+    </a>
+  </div>
+</div>
+
+
+<div class="mb-4">
+  <h3 class="mb-3">Home Page Theme Control</h3>
+  <div class="btn-group" role="group" aria-label="Season Toggle Buttons">
+    {% for s in seasons %}
+    {% if s.name != "all season" %}
+    <a href="{{ url_for('admin.toggle_active_season', season=s.name) }}"
+      class="btn btn-outline-primary{% if s.active %} active{% endif %}">
+      {{ s.name.capitalize() }}
+    </a>
+    {% endif %}
+    {% endfor %}
+    <a href="{{ url_for('admin.toggle_active_season', season='default') }}"
+      class="btn btn-outline-primary{% if not has_active %} active{% endif %}">
+      Default
+    </a>
+  </div>
+</div>
+
+
+<div class="mb-3">
+  <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of
+    Season</a>
+</div>
+
 <table class="table table-striped">
   <thead>
     <tr>
