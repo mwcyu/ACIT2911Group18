@@ -11,6 +11,8 @@ def admin_dashboard():
     if not getattr(current_user, "is_admin", False):
         return "Unauthorized", 403
 
+#hello testing
+
     products = db.session.execute(db.select(Product).order_by(Product.name)).scalars().all()
     # Get counts for each season
     spring_count = sum(1 for p in products if p.season_name == "spring" and p.in_season)
