@@ -76,6 +76,7 @@ def login():
 
             generate_and_send_otp(customer.email)
             session['2fa_user_id'] = customer.id
+            session['2fa_purpose'] = 'login'
             flash(
                 "A 6-digit code has been sent to your email. "
                 "Please enter it below.",
@@ -109,24 +110,31 @@ def register():
         db.session.add(new_customer)
         db.session.commit()
 
-        login_user(new_customer)
-        session.update({
-            "customer_id": new_customer.id,
-            "customer_name": new_customer.name,
-            "cart": {}
-        })
-        return redirect(url_for('dashboard_page'))
+        # Send 2FA email
+        from email_utils import generate_and_send_otp
+
+        generate_and_send_otp(email)
+        session['2fa_user_id'] = new_customer.id
+        session['2fa_purpose'] = 'register'
+
+
+        flash(
+            "A 6-digit code has been sent to your email. "
+            "Please enter it below to complete registration.",
+            "info"
+        )
+        return redirect(url_for('auth.two_factor'))
 
     return render_template("register.html", form=form)
+
 
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
     logout_user()
+    session.clear()
     response = redirect(url_for("home_page"))
-    response.delete_cookie(app.config['REMEMBER_COOKIE_NAME'])
     return response
-
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
@@ -182,25 +190,27 @@ def reset_password(token):
 def two_factor():
     form = TwoFactorForm()
     user_id = session.get("2fa_user_id")
+    purpose = session.get("2fa_purpose", "login")  # default fallback
     if not user_id:
         flash("Please log in first.", "warning")
         return redirect(url_for("auth.login"))
 
     if form.validate_on_submit():
         code_submitted = form.code.data
-        otp        = session.get("2fa_otp")
+        otp = session.get("2fa_otp")
         expires_ts = session.get("2fa_expires", 0)
 
         if datetime.utcnow().timestamp() > expires_ts:
-            flash("Your code has expired. Please log in again.", "danger")
+            flash("Your code has expired. Please try again.", "danger")
             session.pop("2fa_user_id", None)
-            return redirect(url_for("auth.login"))
+            session.pop("2fa_purpose", None)
+            return redirect(url_for(f"auth.{purpose}"))  # back to login or register
 
         if code_submitted == otp:
             customer = db.session.get(Customer, user_id)
             login_user(customer)
 
-            for key in ("2fa_user_id", "2fa_otp", "2fa_expires"):
+            for key in ("2fa_user_id", "2fa_otp", "2fa_expires", "2fa_purpose"):
                 session.pop(key, None)
 
             session.update({
@@ -208,8 +218,11 @@ def two_factor():
                 "customer_name": customer.name,
                 "cart": session.get("cart", {})
             })
+
+            flash("Two-factor authentication successful!", "success")
             return redirect(url_for("dashboard_page"))
 
         flash("Invalid authentication code.", "danger")
 
     return render_template("two_factor.html", form=form)
+

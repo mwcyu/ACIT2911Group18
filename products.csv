@@ -16,7 +16,7 @@ cereal,5.99,30,pantry,False,all season
 cheese,8.99,9,dairy,False,all season
 cherries,6.49,8,produce,True,summer
 chicken,9.99,5,deli,False,all season
-chicken breast,10.78,3,deli,False,all season
+chicken breast,10.78,5,deli,False,all season
 chicken thigh,8.99,5,deli,False,all season
 chocolate,3.49,20,bakery,False,all season
 coffee,9.99,12,beverages,False,all season
@@ -34,12 +34,12 @@ juice,3.49,25,beverages,False,all season
 kiwi,3.29,10,produce,True,all season
 lemon,1.00,5,produce,False,winter
 lettuce,2.99,30,produce,True,spring
-milk,3.49,0,dairy,False,all season
+milk,3.49,5,dairy,False,all season
 muffin,2.79,20,bakery,False,all season
 oat milk,5.29,10,dairy,False,all season
 olive oil,8.99,15,pantry,False,all season
 onions,3.99,12,produce,False,fall
-orange,1.19,0,produce,False,winter
+orange,1.19,5,produce,False,winter
 parma ham,6.99,2400,deli,False,all season
 parsnips,2.99,25,produce,True,winter
 pasta,2.49,50,pantry,False,all season
@@ -51,14 +51,14 @@ pumpkin,3.99,10,produce,True,fall
 radish,1.89,20,produce,True,spring
 raspberries,7.99,10,produce,True,summer
 rice,3.99,40,pantry,False,all season
-ribs,12.99,4,deli,False,all season
+ribs,12.99,5,deli,False,all season
 salami,7.99,12,deli,False,all season
 seitan,6.49,5,plant-based,False,all season
 soda,1.99,50,beverages,False,all season
 soy milk,4.19,15,plant-based,False,all season
 steak,14.99,6,deli,False,all season
 strawberries,5.99,14,produce,True,summer
-sword,19.99,2,deli,False,all season
+sword,19.99,5,deli,False,all season
 tea,5.99,18,beverages,False,all season
 tempeh,4.99,10,plant-based,False,all season
 tofu,3.99,20,plant-based,False,all season
@@ -66,6 +66,6 @@ tomato,2.99,25,produce,True,summer
 turnips,1.89,30,produce,True,winter
 turkey slices,5.99,10,deli,False,all season
 vegan cheese,5.99,8,plant-based,False,all season
-watermelon,6.99,4,produce,True,summer
+watermelon,6.99,5,produce,True,summer
 whipping cream,3.99,10,dairy,False,all season
 zucchini,2.99,18,produce,True,summer
