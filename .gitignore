@@ -7,3 +7,5 @@
 __pycache__/
 project1.db
 /my310env/
+/htmlcov/
+.coverage
