@@ -20,7 +20,7 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('auth.login') }}">
+        <form method="POST" action="{{ url_for('security.login') }}">
           {{ form.hidden_tag() }}
 
           <div class="mb-3">
@@ -51,14 +51,14 @@
         </a>
 
         <div class="text-center">
-          <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">
+          <a href="{{ url_for('security.forgot_password') }}" class="text-decoration-none">
             Forgot your password?
           </a>
         </div>
 
         <div class="text-center mt-2">
           Don't have an account?
-          <a href="{{ url_for('auth.register') }}">Register here</a>.
+          <a href="{{ url_for('security.register') }}">Register here</a>.
         </div>
       </div>
     </div>

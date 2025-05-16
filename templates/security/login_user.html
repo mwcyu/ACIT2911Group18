@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block pagetitle %}Login - Store{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Sign In</h2>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for_security('login') }}">
+                    {{ login_user_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ login_user_form.identity.label(class="form-label") }}
+                        {{ login_user_form.identity(class="form-control",
+                        placeholder="Enter your phone number") }}
+                        {% for error in login_user_form.identity.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ login_user_form.password.label(class="form-label") }}
+                        {{ login_user_form.password(class="form-control",
+                        placeholder="Enter your password") }}
+                        {% for error in login_user_form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if login_user_form.remember %}
+                    <div class="form-check mb-3">
+                        {{ login_user_form.remember(class="form-check-input") }}
+                        <label class="form-check-label" for="{{ login_user_form.remember.id }}">
+                            Remember Me
+                        </label>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid">
+                        {{ login_user_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+
+                <div class="text-center my-3">or</div>
+
+                <a href="{{ url_for('auth.github_oauth') }}" class="btn btn-outline-dark w-100 mb-3">
+                    <i class="bi bi-github me-1"></i> Sign in with GitHub
+                </a>
+
+                <div class="text-center">
+                    <a href="{{ url_for('security.forgot_password') }}" class="text-decoration-none">
+                        Forgot your password?
+                    </a>
+                </div>
+
+                <div class="text-center mt-2">
+                    Don't have an account?
+                    <a href="{{ url_for('security.register') }}">Register here</a>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

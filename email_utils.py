@@ -40,7 +40,7 @@ def send_password_reset_email(customer):
     # Generate reset token using customer's phone
     token = generate_reset_token(customer.phone)
     # Create the full reset URL
-    reset_url = url_for("auth.reset_password", token=token, _external=True)
+    reset_url = url_for("security.reset_password", token=token, _external=True)
 
     # For testing without sending real email
     print("RESET LINK:", reset_url)

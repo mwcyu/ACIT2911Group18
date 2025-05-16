@@ -83,9 +83,9 @@
             {{ current_user.name }}
           </a>
           <a class="btn btn-primary btn-sm" href="{{ url_for('cart.view_cart') }}">Cart</a>
-          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+          <a href="{{ url_for('security.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
           {% else %}
-          <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
+          <a href="{{ url_for('security.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
           {% endif %}
         </div>
       </div>

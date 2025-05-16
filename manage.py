@@ -3,7 +3,7 @@ from models import Customer, Category, Product, Order, ProductOrder, Season, Cou
 from models.customerCoupon import customer_coupons
 import random
 
-from app import app
+from app import app, db
 
 from random import randint
 from datetime import datetime as dt
@@ -136,35 +136,30 @@ def make_completed_orders():
 
 
     
-# if __name__ == "__main__":
-#     if sys.argv[1] == "create":
-#         create()
-#     elif sys.argv[1] == "drop":
-#         drop()
-#     elif sys.argv[1] == "import":
-#         csvReader("products.csv", Product)
-#         csvReader("customers.csv", Customer)
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Manage the database.")
+    parser.add_argument("command", choices=["create", "drop", "import", "orders", "completed_orders", "reset"], help="Action to perform")
+    args = parser.parse_args()
 
-if __name__ == "__main__": 
-    with app.app_context(): 
-        drop_tables() 
-        create_tables()
-        csvReader("products.csv", Product)
-        csvReader("customers.csv", Customer)
-        csvReader("coupons.csv", Coupon)
-        make_orders()
-        make_completed_orders()
-        # obj = Category(name="dairy") 
-        # db.session.add(obj) 
-        # db.session.commit() 
-# # USING PUSH 
-        # app.app_context().push() 
-        # drop_tables() 
-        # create_tables()
-        # csvReader("products.csv", Product)
-        # csvReader("customers.csv", Customer)
-        # make_orders()
-        # make_completed_orders()
-        # obj = Category(name="dairy") 
-        # db.session.add(obj) 
-        # db.session.commit()
+    with app.app_context():
+        if args.command == "create":
+            create_tables()
+        elif args.command == "drop":
+            drop_tables()
+        elif args.command == "import":
+            csvReader("products.csv", Product)
+            csvReader("customers.csv", Customer)
+            csvReader("coupons.csv", Coupon)
+        elif args.command == "orders":
+            make_orders()
+        elif args.command == "completed_orders":
+            make_completed_orders()
+        elif args.command == "reset":
+            drop_tables()
+            create_tables()
+            csvReader("products.csv", Product)
+            csvReader("customers.csv", Customer)
+            csvReader("coupons.csv", Coupon)
+            make_orders()
+            make_completed_orders()

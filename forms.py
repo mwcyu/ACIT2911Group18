@@ -1,23 +1,18 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, EmailField
-from wtforms.validators import InputRequired, Length
+from flask_security.forms import RegisterForm, LoginForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Length
 
-class LoginForm(FlaskForm):
-    phone = StringField("Phone", validators=[InputRequired(), Length(min=8)])
-    password = PasswordField("Password", validators=[InputRequired()])
+class ExtendedRegisterForm(RegisterForm):
+    name = StringField("Name", validators=[DataRequired()])
+    phone = StringField("Phone", validators=[DataRequired(), Length(min=8)])
+
+class PhoneLoginForm(LoginForm):
+    phone = StringField("Phone", validators=[DataRequired(), Length(min=8)])
+    password = PasswordField("Password", validators=[DataRequired()])
+    identity = StringField(
+        "Phone",
+        validators=[DataRequired(message="Please enter your phone number"),
+                    Length(min=8, message="Phone must be at least 8 digits")]
+    )
+
     submit = SubmitField("Login")
-
-class RegisterForm(FlaskForm):
-    name = StringField("Name", validators=[InputRequired()])
-    phone = StringField("Phone", validators=[InputRequired(), Length(min=8)])
-    email = EmailField("Email", validators=[InputRequired()])
-    password = PasswordField("Password", validators=[InputRequired(), Length(min=6)])
-    submit = SubmitField("Register")
-
-class ForgotPasswordForm(FlaskForm):
-    phone = StringField("Phone", validators=[InputRequired(), Length(min=8)])
-    submit = SubmitField("Reset Password")
-
-class ResetPasswordForm(FlaskForm):
-    password = PasswordField("New Password", validators=[InputRequired(), Length(min=6)])
-    submit = SubmitField("Update Password")

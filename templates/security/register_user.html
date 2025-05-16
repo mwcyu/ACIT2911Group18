@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block pagetitle %}Register - Store{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Register</h2>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <form method="POST" action="{{ url_for('security.register') }}">
+                    {{ register_user_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ register_user_form.email.label(class="form-label") }}
+                        {{ register_user_form.email(class="form-control", placeholder="Enter your email") }}
+                        {% for error in register_user_form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ register_user_form.password.label(class="form-label") }}
+                        {{ register_user_form.password(class="form-control", placeholder="Enter your password") }}
+                        {% for error in register_user_form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Register</button>
+                    </div>
+                </form>
+                <div class="text-center mt-2">
+                    Already have an account?
+                    <a href="{{ url_for('security.login') }}">Login here</a>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
