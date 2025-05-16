@@ -83,7 +83,11 @@
             {{ current_user.name }}
           </a>
           <a class="btn btn-primary btn-sm" href="{{ url_for('cart.view_cart') }}">Cart</a>
-          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+          <form action="{{ url_for('auth.logout') }}" method="post" style="display:inline;">
+
+            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+          </form>
+
           {% else %}
           <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
           {% endif %}
