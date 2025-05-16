@@ -16,7 +16,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'fallback-secret')
 app.config.from_object("config.Config")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project1.db"
 app.instance_path = Path(".").resolve()
 
 # --- Extensions ---
