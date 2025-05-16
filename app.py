@@ -158,5 +158,9 @@ def apply_coupon():
     # You should implement logic to store the coupon for the user's checkout
     return redirect(url_for("cart.generate_cart"))
 
+@app.route('/game')
+def game():
+    return render_template('game.html')
+
 if __name__ == "__main__":
     app.run(debug=True, port=8888)
