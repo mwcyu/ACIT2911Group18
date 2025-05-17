@@ -54,21 +54,9 @@ def create_app(config_override=None):
         stmt = db.select(Customer).where(Customer.id == user_id)
         return db.session.execute(stmt).scalar_one_or_none()
 
-    # --- Register Blueprints ---
-    from routes import (
-        api_bp, products_bp, customers_bp, categories_bp,
-        orders_bp, practice_bp, cart_bp, auth_bp, admin_bp
-    )
-
-    app.register_blueprint(api_bp, url_prefix="/api")
-    app.register_blueprint(products_bp, url_prefix="/products")
-    app.register_blueprint(orders_bp, url_prefix="/orders")
-    app.register_blueprint(categories_bp, url_prefix="/categories")
-    app.register_blueprint(customers_bp, url_prefix="/customers")
-    app.register_blueprint(practice_bp, url_prefix="/practice")
-    app.register_blueprint(cart_bp, url_prefix="/cart")
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(admin_bp)
+    # Register blueprints
+    from routes import register_blueprints
+    register_blueprints(app)
 
     # --- Core Routes ---
     @app.route("/")

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user, fresh_login_required
 from db import db
 from models import Product, Season
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", __name__)
 
 @admin_bp.route("/dashboard")
 @login_required
