@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from db import db
 from models import Customer, Category, Product, Coupon, Season
 
+
+
 # Load environment variables
 load_dotenv()
 
@@ -26,6 +28,8 @@ def create_app(config_override=None):
     # Base config
     app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
     app.config.from_object("config.Config")
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 
     # Optional override (for testing)
     if config_override:
