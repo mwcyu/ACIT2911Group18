@@ -103,3 +103,116 @@ class TestAdminAPI:
         assert response.status_code == 200
         data = response.get_json()
         assert data["admin"] is False
+        
+class TestAdminSeasonControls:
+    def test_turn_all_out_of_season(self, logged_in_client, test_user, test_product, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        test_product.in_season = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/turn_all_out_of_season", follow_redirects=True)
+        assert response.status_code == 200
+
+        db.session.refresh(test_product)
+        assert test_product.in_season is False
+
+    def test_toggle_season_group(self, logged_in_client, test_user, test_product, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        test_product.season_name = "fall"
+        test_product.in_season = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_season_group/fall", follow_redirects=True)
+        assert response.status_code == 200
+
+        db.session.refresh(test_product)
+        assert test_product.in_season is False
+
+    def test_toggle_active_season(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        from models import Season
+        fall = Season(name="fall", active=False)
+        spring = Season(name="spring", active=True)
+        db.session.add_all([fall, spring])
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_active_season/fall", follow_redirects=True)
+        assert response.status_code == 200
+
+        db.session.refresh(fall)
+        db.session.refresh(spring)
+        assert fall.active is True
+        assert spring.active is False
+
+    def test_toggle_active_season_to_default(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        from models import Season
+        spring = Season(name="spring", active=True)
+        db.session.add(spring)
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_active_season/default", follow_redirects=True)
+        assert response.status_code == 200
+
+        db.session.refresh(spring)
+        assert spring.active is False
+
+    def test_toggle_active_season_invalid(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_active_season/winter", follow_redirects=True)
+        assert response.status_code == 200
+        assert b"Season not found" in response.data
+
+class TestAdminUnauthorizedAccess:
+    def test_dashboard_requires_admin(self, logged_in_client, db):
+        response = logged_in_client.get("/admin/dashboard")
+        assert response.status_code == 403
+
+    def test_toggle_season_requires_admin(self, logged_in_client, test_product):
+        response = logged_in_client.get(f"/admin/toggle_season/{test_product.id}")
+        assert response.status_code == 403
+
+    def test_turn_all_out_of_season_requires_admin(self, logged_in_client):
+        response = logged_in_client.get("/admin/turn_all_out_of_season")
+        assert response.status_code == 403
+
+    def test_toggle_group_requires_admin(self, logged_in_client):
+        response = logged_in_client.get("/admin/toggle_season_group/spring")
+        assert response.status_code == 403
+
+    def test_toggle_active_season_requires_admin(self, logged_in_client):
+        response = logged_in_client.get("/admin/toggle_active_season/spring")
+        assert response.status_code == 403
+
+
+class TestAdminEdgeCases:
+    def test_toggle_group_with_no_products(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_season_group/winter", follow_redirects=True)
+        assert response.status_code == 200  # Should not crash even if no products
+
+    def test_toggle_active_season_missing_param(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_active_season/", follow_redirects=True)
+        assert response.status_code in (404, 308)  # May redirect or 404 depending on routing config
+
+    def test_toggle_season_invalid_id(self, logged_in_client, test_user, db):
+        test_user.is_admin = True
+        db.session.commit()
+
+        response = logged_in_client.get("/admin/toggle_season/99999")
+        assert response.status_code == 404

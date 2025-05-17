@@ -1,14 +1,15 @@
 """Unit tests for email utilities"""
 import pytest
 from unittest.mock import MagicMock, patch
-from flask import Flask
+from flask import session
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from email_utils import (
     generate_reset_token,
     verify_reset_token,
     send_password_reset_email,
-    render_reset_email
+    render_reset_email,
+    generate_and_send_otp
 )
 
 class TestTokenGeneration:
@@ -95,3 +96,37 @@ class TestEmailSending:
             app.extensions = {'mail': mock_mail}
             # Should not raise an exception
             send_password_reset_email(test_user)
+
+class TestOTPGeneration:
+    @patch("email_utils.random.randint", return_value=123456)
+    def test_generate_and_send_otp_stores_session_and_sends(self, mock_randint, app, client):
+        """Test OTP generation stores data in session and sends mail"""
+        mock_mail = MagicMock()
+
+        with app.test_request_context():
+            app.extensions = {"mail": mock_mail}
+            generate_and_send_otp("test@example.com")
+
+            # Check OTP session values
+            assert session["2fa_otp"] == "123456"
+            assert isinstance(session["2fa_expires"], float)
+
+            # Validate mail sending
+            assert mock_mail.send.called
+            msg = mock_mail.send.call_args[0][0]
+            assert "123456" in msg.body
+            assert msg.recipients == ["test@example.com"]
+            assert msg.subject == "Your Login Code"
+            
+            
+    @patch("email_utils.random.randint", return_value=111111)
+    def test_generate_and_send_otp_handles_send_failure(self, mock_randint, app):
+        """Should catch mail sending exception"""
+        broken_mail = MagicMock()
+        broken_mail.send.side_effect = Exception("SMTP Error")
+
+        with app.test_request_context():
+            app.extensions = {"mail": broken_mail}
+            generate_and_send_otp("error@example.com")
+
+            assert session["2fa_otp"] == "111111"

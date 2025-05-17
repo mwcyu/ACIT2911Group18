@@ -121,6 +121,30 @@ def create_app(config_override=None):
     @app.route("/game")
     def game():
         return render_template("game.html")
+    
+    @app.route("/spring")
+    def spring_page():
+        categories = db.session.execute(db.select(Category)).scalars()
+        products = db.session.execute(db.select(Product).where(Product.season_name == "spring")).scalars()
+        return render_template("spring.html", categories=categories, current_user=current_user, products=products)
+
+    @app.route("/summer")
+    def summer_page():
+        categories = db.session.execute(db.select(Category)).scalars()
+        products = db.session.execute(db.select(Product).where(Product.season_name == "summer")).scalars()
+        return render_template("summer.html", categories=categories, current_user=current_user, products=products)
+
+    @app.route("/fall")
+    def fall_page():
+        categories = db.session.execute(db.select(Category)).scalars()
+        products = db.session.execute(db.select(Product).where(Product.season_name == "fall")).scalars()
+        return render_template("fall.html", categories=categories, current_user=current_user, products=products)
+
+    @app.route("/winter")
+    def winter_page():
+        categories = db.session.execute(db.select(Category)).scalars()
+        products = db.session.execute(db.select(Product).where(Product.season_name == "winter")).scalars()
+        return render_template("winter.html", categories=categories, current_user=current_user, products=products)
 
     return app
 

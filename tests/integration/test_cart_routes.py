@@ -121,3 +121,68 @@ class TestCartEdgeCases:
         db.session.commit()
 
         assert test_user.active_cart_id != order2.id
+
+class TestCartRenameAndCoupon:
+    def test_rename_cart(self, logged_in_client, test_user, db):
+        order = Order(customer=test_user)
+        db.session.add(order)
+        db.session.commit()
+
+        response = logged_in_client.post(
+            f"/cart/rename/{order.id}",
+            data={"new_name": "Weekly Groceries"},
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert_flashed_message(response, "Cart name updated!", "success")
+        db.session.refresh(order)
+        assert order.name == "Weekly Groceries"
+
+    def test_rename_cart_invalid_user(self, logged_in_client, test_user, db):
+        another_order = Order(customer_id=9999)
+        db.session.add(another_order)
+        db.session.commit()
+
+        response = logged_in_client.post(
+            f"/cart/rename/{another_order.id}",
+            data={"new_name": "Sneaky"},
+            follow_redirects=True
+        )
+        assert response.status_code == 403
+
+    def test_rename_cart_empty_name(self, logged_in_client, test_user, db):
+        order = Order(customer=test_user)
+        db.session.add(order)
+        db.session.commit()
+
+        response = logged_in_client.post(
+            f"/cart/rename/{order.id}",
+            data={"new_name": " "},
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert_flashed_message(response, "Cart name cannot be empty.", "danger")
+
+    def test_apply_valid_coupon(self, logged_in_client, test_user, test_product, db):
+        from models import Coupon
+        coupon = Coupon(code="SAVE10", discount_amount=10, is_percent=False, active=True)
+        test_user.coupons.append(coupon)
+        db.session.add(coupon)
+        db.session.commit()
+
+        response = logged_in_client.post(
+            "/cart/apply-coupon",
+            data={"coupon_id": coupon.id},
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert_flashed_message(response, f"Coupon {coupon.code} applied!", "success")
+
+    def test_apply_invalid_coupon(self, logged_in_client, db):
+        response = logged_in_client.post(
+            "/cart/apply-coupon",
+            data={"coupon_id": 9999},
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert_flashed_message(response, "Invalid or unavailable coupon.", "danger")
