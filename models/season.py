@@ -4,7 +4,7 @@ class Season(db.Model):
     __tablename__ = "Seasons"
 
     id = db.mapped_column(db.Integer, primary_key=True)
-    name = db.mapped_column(db.String)
+    name = db.mapped_column(db.String, unique=True, nullable=False)
     active = db.mapped_column(db.Boolean, default=False)
     products = db.relationship("Product",back_populates="season")
 
