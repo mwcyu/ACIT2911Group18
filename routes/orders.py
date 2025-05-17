@@ -6,7 +6,6 @@ from datetime import datetime as dt
 
 import operator
 
-
 orders_bp = Blueprint("orders", __name__)
 
 @orders_bp.route("/")
