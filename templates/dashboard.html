@@ -16,7 +16,6 @@
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <strong>{{ order.name or "Order #" ~ order.id }}</strong>
-          <small class="text-muted ms-2">(#{{ order.id }})</small>
 
           {% if order.id == current_user.active_cart_id %}
           <span class="badge bg-primary ms-2">✅ Active Cart</span>
@@ -30,7 +29,7 @@
         <button class="btn btn-sm btn-outline-primary disabled">Active Cart</button>
         {% endif %}
       </div>
-
+      <small class="text-muted">Order #{{ order.id }}</small><br>
       <small class="text-muted">Created: {{ order.created.strftime('%Y-%m-%d %H:%M') }}</small>
 
       <ul class="mt-2 mb-2">
@@ -52,11 +51,9 @@
     <div class="list-group-item">
       <div class="d-flex justify-content-between align-items-center">
         <strong>{{ order.name or "Order #" ~ order.id }}</strong>
-        <small class="text-muted ms-2">(#{{ order.id }})</small>
-
         <span class="badge bg-success">Completed</span>
       </div>
-
+      <small class="text-muted">Order #{{ order.id }}</small><br>
       <small class="text-muted">Created: {{ order.created.strftime('%Y-%m-%d %H:%M') }}</small><br>
       <small class="text-muted">Completed: {{ order.completed.strftime('%Y-%m-%d %H:%M') }}</small>
 
