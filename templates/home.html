@@ -101,6 +101,31 @@
                     <strong>Price:</strong> ${{ product.price }}<br />
                     <strong>Available:</strong> {{ product.available }}
                 </p>
+
+                {% if current_user.is_authenticated %}
+                {% set cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list |
+                first %}
+                {% set cart_item = cart.items | selectattr("product_id", "equalto", product.id) | list | first if cart
+                else None %}
+
+                {% if cart_item %}
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <form action="{{ url_for('cart.update_cart_item', product_id=product.id) }}" method="POST"
+                        class="d-flex align-items-center gap-2">
+                        <div class="input-group">
+                            <input type="number" name="quantity" class="form-control" value="{{ cart_item.quantity }}"
+                                min="1" max="{{ product.available }}">
+                            <button type="submit" class="btn btn-primary">Update Cart</button>
+                        </div>
+                    </form>
+                    <a href="{{ url_for('cart.remove_cart_item', product_id=product.id) }}"
+                        class="btn btn-outline-danger">Remove</a>
+                </div>
+
+                {% else %}
+                <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-primary">Add to Cart</a>
+                {% endif %}
+                {% endif %}
             </div>
             {% if product.category %}
             <div class="card-footer text-muted">
