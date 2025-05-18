@@ -8,6 +8,7 @@ from .categories import categories_bp
 from .customers import customers_bp
 from .orders import orders_bp
 from .products import products_bp
+from .game import game_bp
 
 __all__ = [
     "register_blueprints",
@@ -19,6 +20,7 @@ __all__ = [
     "customers_bp",
     "orders_bp",
     "products_bp",
+    "game_bp",
 ]
 
 def register_blueprints(app):
@@ -30,3 +32,4 @@ def register_blueprints(app):
     app.register_blueprint(customers_bp, url_prefix="/customers")
     app.register_blueprint(orders_bp, url_prefix="/orders")
     app.register_blueprint(products_bp, url_prefix="/products")
+    app.register_blueprint(game_bp, url_prefix="/game")

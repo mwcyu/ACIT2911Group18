@@ -98,7 +98,7 @@ def toggle_active_season(season):
     # If "default", commit the changes and return
     if season == "default":
         db.session.commit()
-        return redirect(url_for("home_page"))
+        return redirect(url_for("admin.admin_dashboard"))
 
     # Activate the selected season
     selected_season = db.session.scalar(db.select(Season).where(Season.name == season))
@@ -108,4 +108,5 @@ def toggle_active_season(season):
     else:
         flash("Season not found.", "danger")
 
-    return redirect(url_for("home_page"))
+    return redirect(url_for("admin.admin_dashboard"))
+

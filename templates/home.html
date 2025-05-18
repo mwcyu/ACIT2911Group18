@@ -76,15 +76,16 @@
 <a class="btn btn-success mb-4" href="{{ url_for('spin_wheel') }}">
     🎁 Spin the Wheel for a Coupon
 </a>
+<a class="btn btn-primary mb-4" href="{{ url_for('cart.new_cart') }}">
+    New Cart
+</a>
 {% endif %}
 
 {% if current_user["is_admin"] == True%}
 
 {% endif %}
 
-<a class="btn btn-primary mb-4" href="{{ url_for('game') }}">
-    Play for Discount
-</a>
+<a class="btn btn-primary mb-4" href="{{ url_for('game.slot_machine') }}"> 🎰 Play Slots for Discounts!</a>
 
 {% if products %}
 <div class="row row-cols-1 row-cols-md-3 g-4">
