@@ -49,3 +49,24 @@ set the default to datetime.now (notice the lack of parentheses)
 import SQL functions from SQLAlchemy (accessible from the db object) and use them for the default
 value: db.func.now() is the NOW() function in SQL.
 """
+
+@api_bp.route("/search")
+def search():
+    query = request.args.get("q", "").lower()
+    if not query:
+        return jsonify({"products": [], "categories": []})
+    
+    # Search products
+    product_stmt = db.select(Product).where(db.func.lower(Product.name).contains(query))
+    products = db.session.execute(product_stmt).scalars().all()
+    
+    # Search categories
+    category_stmt = db.select(Category).where(db.func.lower(Category.name).contains(query))
+    categories = db.session.execute(category_stmt).scalars().all()
+    
+    results = {
+        "products": [{"id": p.id, "name": p.name, "type": "product"} for p in products],
+        "categories": [{"name": c.name, "type": "category"} for c in categories]
+    }
+    
+    return jsonify(results)

@@ -118,9 +118,7 @@ def create_app(config_override=None):
         flash(f"Coupon {code} applied!", "success")
         return redirect(url_for("cart.generate_cart"))
 
-    @app.route("/game")
-    def game():
-        return render_template("game.html")
+        # Game routes moved to routes/game.py
     
     @app.route("/spring")
     def spring_page():

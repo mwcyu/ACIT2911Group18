@@ -63,12 +63,42 @@ def add_to_cart(id: int):
 @login_required
 def apply_coupon():
     coupon_id = request.form.get("coupon_id")
+    if coupon_id == "none":
+        session.pop('applied_coupon_id', None)
+        flash("Coupon removed.", "info")
+        return redirect(url_for("cart.view_cart"))
+
     coupon = db.session.get(Coupon, coupon_id)
     if not coupon or coupon not in current_user.coupons:
         flash("Invalid or unavailable coupon.", "danger")
         return redirect(url_for("cart.view_cart"))
+    
+    # Get current cart total
+    order = get_or_create_pending_order(current_user)
+    cart_total = order.estimate()
+    
+    # Check minimum purchase requirement
+    if coupon.minimum_purchase and cart_total < coupon.minimum_purchase:
+        flash(f"This coupon requires a minimum purchase of ${coupon.minimum_purchase:.2f}. Current total: ${cart_total:.2f}", "warning")
+        return redirect(url_for("cart.view_cart"))
+    
+    # If there's already a coupon applied, show that we're replacing it
+    current_coupon = get_applied_coupon(current_user)
+    if current_coupon:
+        flash(f"Replaced coupon {current_coupon.code} with {coupon.code}.", "info")
+    
     session['applied_coupon_id'] = coupon.id
     flash(f"Coupon {coupon.code} applied!", "success")
+    return redirect(url_for("cart.view_cart"))
+
+
+@cart_bp.route("/remove-coupon")
+@login_required
+def remove_coupon():
+    current_coupon = get_applied_coupon(current_user)
+    if current_coupon:
+        flash(f"Removed coupon {current_coupon.code}.", "info")
+        session.pop('applied_coupon_id', None)
     return redirect(url_for("cart.view_cart"))
 
 
@@ -87,7 +117,9 @@ def checkout_cart():
         if coupon.is_percent:
             discount = total * (coupon.discount_amount / 100)
         else:
-            discount = coupon.discount_amount
+            if total >= coupon.minimum_purchase:
+                discount = coupon.discount_amount
+                
         total = max(0, total - discount)
         flash(f"Coupon {coupon.code} applied: -${discount:.2f}", "success")
         # Remove coupon from customer after use
@@ -119,7 +151,7 @@ def view_cart():
             "name": product.name,
             "price": float(product.price),
             "quantity": item.quantity,
-            "inventory": item.product.available,
+            "inventory": product.available,
             "subtotal": round(float(product.price)*item.quantity,2)
         })
     # Coupon logic for display
@@ -134,6 +166,7 @@ def view_cart():
             if applied_coupon.is_percent:
                 discount = total * (applied_coupon.discount_amount / 100)
             else:
+                minimum_spent = applied_coupon.minimum_purchase
                 discount = applied_coupon.discount_amount
     return render_template(
         "cart.html",
@@ -144,6 +177,53 @@ def view_cart():
         discount=discount
     )
 
+@cart_bp.route("/newcart")
+@login_required
+def new_cart():
+    # Get current customer
+    customer = db.session.get(Customer, current_user.id)
+    
+    # Create new cart/order for customer
+    new_cart = Order(customer=current_user)
+    db.session.add(new_cart)
+    db.session.flush()  # Flush to get the new cart ID
+    
+    # Update customer's active cart ID
+    customer.active_cart_id = new_cart.id
+    
+    # Store cart ID in session
+    session["active_order_id"] = new_cart.id
+    
+    db.session.commit()
+    flash("New cart created", "success")
+    
+    # Redirect back to previous page
+    return redirect(request.referrer or url_for("cart.view_cart"))
+
+@cart_bp.route("/removecart/<int:cart_id>")
+@login_required
+def remove_cart(cart_id):
+    cart = db.session.get(Order, cart_id)
+    if not cart:
+        flash("Cart not found.", "danger")
+        return redirect(request.referrer or url_for("cart.view_cart"))
+
+    if cart.customer_id != current_user.id:
+        flash("You are not authorized to delete this cart.", "danger")
+        return redirect(request.referrer or url_for("cart.view_cart"))
+
+    if cart.completed:
+        flash("Can't delete completed orders.", "danger")
+        return redirect(request.referrer or url_for("cart.view_cart"))
+
+    # Unset active cart if needed
+    if hasattr(current_user, "active_cart_id") and current_user.active_cart_id == cart.id:
+        current_user.active_cart_id = None
+
+    db.session.delete(cart)
+    db.session.commit()
+    flash("Successfully removed cart.", "success")
+    return redirect(request.referrer or url_for("cart.view_cart"))
 
 @cart_bp.route("/update/<int:product_id>", methods=["POST"])
 @login_required

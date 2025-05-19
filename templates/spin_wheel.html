@@ -2,22 +2,58 @@
 {% block pagetitle %}Spin the Wheel!{% endblock %}
 {% block content %}
 <style>
+    .page-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
     .wheel-container {
         position: relative;
-        padding: 2rem;
+        padding: 1.5rem;
         border-radius: 1.5rem;
         background: linear-gradient(145deg, #f6f8fa, #e8eaec);
         box-shadow:
-            0 10px 20px rgba(0, 0, 0, 0.1),
+            0 10px 20px rgba(0, 0, 0, 0.2),
             0 6px 6px rgba(0, 0, 0, 0.1),
             inset 0 -5px 12px rgba(255, 255, 255, 0.7);
+        width: 500px;
+        margin: 0 auto;
+    }
+
+    .wheel-layout {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .wheel-controls {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
     }
 
     .wheel-inner {
         position: relative;
         width: 400px;
-        max-width: 100%;
-        margin: 2rem auto;
+        height: 400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .wheel-center-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 200;
     }
 
     #wheelCanvas {
@@ -40,15 +76,22 @@
     #spinBtn {
         background: linear-gradient(145deg, #3b82f6, #2563eb);
         border: none;
-        padding: 1rem 3.5rem;
-        font-size: 1.25rem;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
         font-weight: bold;
         text-transform: uppercase;
-        border-radius: 3rem;
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         color: white;
         letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.2;
     }
 
     #spinBtn:hover:not(:disabled) {
@@ -123,26 +166,31 @@
     }
 </style>
 
-<div class="container py-4">
+<div class="page-container">
     <div class="wheel-container">
-        <h2 class="text-center mb-4" style="color: #1e293b; font-weight: bold;">
+        <h2 class="text-center mb-3" style="color: #1e293b; font-weight: bold; font-size: 1.5rem;">
             🎉 Spin to Win Amazing Discounts! 🎉
-        </h2>
-        <div class="wheel-inner">
-            <svg class="pointer" viewBox="0 0 50 50">
-                <path d="M25 0 L50 40 L25 50 L0 40 Z" fill="#2563eb" />
-            </svg>
-            <canvas id="wheelCanvas" width="400" height="400"></canvas>
-        </div>
-        <div class="text-center mt-4">
-            <button id="spinBtn" class="btn">SPIN THE WHEEL</button>
-            <div id="result" class="mt-4 h4"></div>
-            <form id="claimForm" method="post" action="{{ url_for('spin_wheel') }}" style="display: none;">
-                <input type="hidden" name="coupon_code" id="couponCode">
-                <button type="submit" class="btn-claim mt-3">
-                    🎁 Claim Your Prize!
-                </button>
-            </form>
+        </h2><br>
+
+        <div class="wheel-layout">
+            <div class="wheel-inner">
+                <div class="wheel-center-button">
+                    <button id="spinBtn" class="btn">SPIN<br>THE<br>WHEEL</button>
+                </div>
+                <svg class="pointer" viewBox="0 0 50 50">
+                    <path d="M25 50 L50 10 L25 0 L0 10 Z" fill="#2563eb" />
+                </svg>
+                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            </div>
+            <div class="wheel-controls">
+                <div id="result" class="h4 text-center"></div>
+                <form id="claimForm" method="post" action="{{ url_for('spin_wheel') }}" style="display: none;">
+                    <input type="hidden" name="coupon_code" id="couponCode">
+                    <button type="submit" class="btn-claim">
+                        🎁 Claim Your Prize!
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
