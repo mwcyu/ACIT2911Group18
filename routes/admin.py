@@ -110,3 +110,11 @@ def toggle_active_season(season):
 
     return redirect(url_for("admin.admin_dashboard"))
 
+
+@admin_bp.route("/toggle")
+@login_required
+def admin_toggle():
+    current_user.is_admin = not current_user.is_admin
+    db.session.commit()
+    flash(f"Admin status set to {current_user.is_admin}", "info")
+    return redirect(request.referrer or url_for("home_page")) 
