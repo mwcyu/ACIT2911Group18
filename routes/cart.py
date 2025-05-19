@@ -73,15 +73,6 @@ def apply_coupon():
         flash("Invalid or unavailable coupon.", "danger")
         return redirect(url_for("cart.view_cart"))
     
-    # Get current cart total
-    order = get_or_create_pending_order(current_user)
-    cart_total = order.estimate()
-    
-    # Check minimum purchase requirement
-    if coupon.minimum_purchase and cart_total < coupon.minimum_purchase:
-        flash(f"This coupon requires a minimum purchase of ${coupon.minimum_purchase:.2f}. Current total: ${cart_total:.2f}", "warning")
-        return redirect(url_for("cart.view_cart"))
-    
     # If there's already a coupon applied, show that we're replacing it
     current_coupon = get_applied_coupon(current_user)
     if current_coupon:
@@ -89,16 +80,6 @@ def apply_coupon():
     
     session['applied_coupon_id'] = coupon.id
     flash(f"Coupon {coupon.code} applied!", "success")
-    return redirect(url_for("cart.view_cart"))
-
-
-@cart_bp.route("/remove-coupon")
-@login_required
-def remove_coupon():
-    current_coupon = get_applied_coupon(current_user)
-    if current_coupon:
-        flash(f"Removed coupon {current_coupon.code}.", "info")
-        session.pop('applied_coupon_id', None)
     return redirect(url_for("cart.view_cart"))
 
 
@@ -163,11 +144,12 @@ def view_cart():
         from models.coupon import Coupon
         applied_coupon = db.session.get(Coupon, applied_coupon_id)
         if applied_coupon:
-            if applied_coupon.is_percent:
-                discount = total * (applied_coupon.discount_amount / 100)
-            else:
-                minimum_spent = applied_coupon.minimum_purchase
-                discount = applied_coupon.discount_amount
+            # Only apply discount if minimum purchase is met
+            if not applied_coupon.minimum_purchase or total >= applied_coupon.minimum_purchase:
+                if applied_coupon.is_percent:
+                    discount = total * (applied_coupon.discount_amount / 100)
+                else:
+                    discount = applied_coupon.discount_amount
     return render_template(
         "cart.html",
         active_cart=order,

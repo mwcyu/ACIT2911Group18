@@ -140,6 +140,42 @@
     </div>
 </div>
 
+{% if coupon_progress %}
+<div class="container mt-4 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">🎉 Coupon Progress</h5>
+            <p class="card-text">
+                <small class="text-muted">Progress towards {{ coupon_progress.coupon.code }} minimum purchase (${{
+                    "%.2f"|format(coupon_progress.coupon.minimum_purchase) }})</small>
+            </p>
+            <div class="progress" role="progressbar" style="height: 30px">
+                <div class="progress-bar  
+                    {% if coupon_progress.is_complete %}
+                    bg-success 
+                    {% else %}
+                    bg-primary progress-bar-striped progress-bar-animated
+                    {% endif %}" style="width: {{ [100, coupon_progress.progress]|min }}%"
+                    aria-valuenow="{{ coupon_progress.progress }}" aria-valuemin="0" aria-valuemax="100">
+                    ${{ "%.2f"|format(coupon_progress.total) }} / ${{
+                    "%.2f"|format(coupon_progress.coupon.minimum_purchase) }}
+                </div>
+            </div>
+            {% if not coupon_progress.is_complete %}
+            <p class="mt-2 mb-0 text-muted">
+                <small>Add ${{ "%.2f"|format(coupon_progress.remaining) }} more to your cart to apply the
+                    discount!</small>
+            </p>
+            {% else %}
+            <p class="mt-2 mb-0 text-success">
+                <small>🎉 Congratulations! You've met the minimum purchase requirement!</small>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div id="featured-products">
     <h2 class="mb-4">Featured Seasonal Products</h2>
 
