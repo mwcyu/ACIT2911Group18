@@ -153,6 +153,9 @@
     <a class="btn btn-primary mb-4" href="{{ url_for('cart.new_cart') }}">
         New Cart
     </a>
+    <a class="btn btn-info mb-4" href="{{ url_for('admin.admin_toggle') }}">
+        Admin Toggle
+    </a>
     {% endif %}
 
     {% if current_user["is_admin"] == True%}
