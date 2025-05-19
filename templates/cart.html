@@ -66,7 +66,6 @@
       {% if discount and applied_coupon %}
       <div class="d-flex align-items-center gap-2">
         <div class="text-danger">-{{ applied_coupon.code }}: -${{ "%.2f"|format(discount) }}</div>
-        <a href="{{ url_for('cart.remove_coupon') }}" class="btn btn-sm btn-outline-danger">Remove</a>
       </div>
       <h5>New Total: <span class="text-success">${{ "%.2f"|format(total - discount) }}</span></h5>
       {% endif %}

@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_required, current_user
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
+import random
 
 from db import db
 from models import Customer, Category, Product, Coupon, Season
@@ -146,7 +147,12 @@ def create_app(config_override=None):
             "minimum_purchase": float(c.minimum_purchase) if c.minimum_purchase else None
         } for c in coupons]
 
-        return render_template("spin_wheel.html", wheel_coupons=wheel_data)
+        # Pre-select a random coupon
+        selected_coupon = random.choice(wheel_data)
+
+        return render_template("spin_wheel.html", 
+                             wheel_coupons=wheel_data,
+                             selected_coupon=selected_coupon)
 
     @app.route("/apply-coupon", methods=["POST"])
     @login_required
