@@ -1,0 +1,684 @@
+{% extends "base.html" %}
+{% block pagetitle %}Slot Machine{% endblock %}
+{% block content %}
+<style>
+    .slot-machine-container {
+        position: relative;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        background: linear-gradient(145deg, #2d3748, #1a202c);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .slot-display {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 2rem 0;
+        padding: 2rem;
+        background: linear-gradient(145deg, #1a202c, #2d3748);
+        border-radius: 1rem;
+        box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .slot-reel {
+        width: 120px;
+        height: 120px;
+        background: #ffffff;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        perspective: 1000px;
+    }
+
+    @media (max-width: 768px) {
+        .slot-reel {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .slot-lever {
+            right: -40px;
+            font-size: 3rem;
+        }
+    }
+
+    .slot-reel i {
+        transition: transform 0.3s ease;
+    }
+
+    .slot-symbol {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.1s ease;
+        background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    }
+
+    .slot-symbol i {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backface-visibility: hidden;
+        transition: transform 0.1s ease;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .slot-symbol.blur i {
+        filter: blur(2px);
+        transform: scale(1.1);
+    }
+
+    .slot-lever {
+        position: absolute;
+        right: -60px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 4rem;
+        color: #e53e3e;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .slot-lever:hover {
+        transform: translateY(-50%) scale(1.1);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    }
+
+    .slot-lever.pulled {
+        transform: translateY(-50%) rotate(30deg);
+    }
+
+    #spinBtn {
+        background: linear-gradient(145deg, #e53e3e, #c53030);
+        border: none;
+        padding: 1.5rem 4rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 3rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        color: white;
+        letter-spacing: 2px;
+        margin: 2rem 0;
+        cursor: pointer;
+    }
+
+    #spinBtn:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(229, 62, 62, 0.4);
+        background: linear-gradient(145deg, #dc2626, #b91c1c);
+    }
+
+    #spinBtn:active:not(:disabled) {
+        transform: translateY(1px);
+        box-shadow: 0 2px 10px rgba(229, 62, 62, 0.3);
+    }
+
+    #spinBtn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-claim {
+        background: linear-gradient(145deg, #22c55e, #16a34a);
+        border: none;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        color: white;
+    }
+
+    .btn-claim:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+        background: linear-gradient(145deg, #16a34a, #15803d);
+    }
+
+    @keyframes jackpotEffect {
+        0% {
+            transform: scale(1) rotate(0deg);
+            filter: brightness(1);
+        }
+
+        25% {
+            transform: scale(1.2) rotate(-5deg);
+            filter: brightness(1.2);
+        }
+
+        75% {
+            transform: scale(1.2) rotate(5deg);
+            filter: brightness(1.2);
+        }
+
+        100% {
+            transform: scale(1) rotate(0deg);
+            filter: brightness(1);
+        }
+    }
+
+    .jackpot {
+        animation: jackpotEffect 0.5s ease;
+    }
+
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        color: white;
+        flex: 1;
+        min-width: 150px;
+        backdrop-filter: blur(5px);
+    }
+
+    .prize-odds {
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        color: white;
+    }
+
+    .prize-odds table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .prize-odds th,
+    .prize-odds td {
+        padding: 0.8rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: middle;
+    }
+
+    .prize-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .prize-description {
+        display: flex;
+        align-items: center;
+    }
+
+    @keyframes confetti {
+        0% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        100% {
+            transform: translateY(100vh) rotate(720deg);
+        }
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        opacity: 0;
+    }
+
+    .win-streak-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #f59e0b;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 50%;
+        font-size: 0.9rem;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="slot-machine-container">
+        <h2 class="text-center mb-4 text-white">
+            🎰 Lucky Slots - Win Amazing Discounts! 🎰
+        </h2>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <h5>Win Streak</h5>
+                <div id="winStreak">0</div>
+            </div>
+            <div class="stat-box">
+                <h5>Best Streak</h5>
+                <div id="bestStreak">0</div>
+            </div>
+        </div>
+
+        <div class="slot-display">
+            <div class="slot-reel" id="reel1">
+                <div class="slot-symbol">
+                    <i class="bi bi-gift"></i>
+                </div>
+            </div>
+            <div class="slot-reel" id="reel2">
+                <div class="slot-symbol">
+                    <i class="bi bi-star"></i>
+                </div>
+            </div>
+            <div class="slot-reel" id="reel3">
+                <div class="slot-symbol">
+                    <i class="bi bi-heart"></i>
+                </div>
+            </div>
+            <div class="slot-lever">
+                <i class="bi bi-arrow-down-square-fill"></i>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button id="spinBtn" class="btn btn-danger btn-lg">
+                🎰 PULL THE LEVER 🎰
+            </button>
+            <div id="result" class="mt-4 h4 text-white"></div>
+            <form id="claimForm" method="post" action="{{ url_for('game.slot_machine') }}" style="display: none;">
+                <input type="hidden" name="coupon_code" id="couponCode">
+                <button type="submit" class="btn-claim mt-3">
+                    🎁 Claim Your Prize!
+                </button>
+            </form>
+        </div>
+
+        <div class="prize-odds">
+            <h4 class="text-center mb-3">Match 3 Icons to Win These Prizes!</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Prize Icon</th>
+                        <th>Description</th>
+                        <th>Odds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coupon in slot_coupons %}
+                    <tr>
+                        <td>
+                            <div class="prize-icon">
+                                <i class="bi {{ coupon.icon }}"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="prize-description">
+                                {{ coupon.description }}
+                            </div>
+                        </td>
+                        <td>{{ coupon.odds }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Audio elements -->
+<audio id="spinSound" preload="auto">
+    <source src="{{ url_for('static', filename='sounds/spin.mp3') }}" type="audio/mpeg">
+</audio>
+<audio id="winSound" preload="auto">
+    <source src="{{ url_for('static', filename='sounds/win.mp3') }}" type="audio/mpeg">
+</audio>
+
+<script>
+    // Initialize DOM elements
+    const spinButton = document.getElementById('spinBtn');
+    const resultDiv = document.getElementById('result');
+    const claimForm = document.getElementById('claimForm');
+    const couponCodeInput = document.getElementById('couponCode');
+    const slotReels = Array.from(document.querySelectorAll('.slot-reel'));
+    const lever = document.querySelector('.slot-lever');
+    const winStreakDiv = document.getElementById('winStreak');
+    const bestStreakDiv = document.getElementById('bestStreak');
+    const spinSound = document.getElementById('spinSound');
+    const winSound = document.getElementById('winSound');
+
+    // Initialize game state
+    const symbols = [
+        'bi-gift',           // Default icon if no coupons
+        'bi-star',
+        'bi-heart',
+        'bi-gem',
+        'bi-trophy',
+        'bi-lightning'
+    ];
+
+    const coupons = {{ slot_coupons| tojson | safe }};
+    let isSpinning = false;
+    let winStreak = 0;
+    let bestStreak = 0;
+
+    // Map coupons to specific symbols
+    const couponSymbols = coupons.map((coupon, index) => ({
+        ...coupon,
+        icon: symbols[index % symbols.length]  // Cycle through symbols if more coupons than symbols
+    }));
+
+    function getRandomCouponSymbol() {
+        return couponSymbols[Math.floor(Math.random() * couponSymbols.length)].icon;
+    }
+
+    // Make sure all elements are found
+    if (!spinButton || !resultDiv || !claimForm || !couponCodeInput || slotReels.length !== 3 || !lever || !winStreakDiv || !bestStreakDiv) {
+        console.error('Missing required elements:', {
+            spinButton: !!spinButton,
+            resultDiv: !!resultDiv,
+            claimForm: !!claimForm,
+            couponCodeInput: !!couponCodeInput,
+            slotReels: slotReels.length,
+            lever: !!lever,
+            winStreakDiv: !!winStreakDiv,
+            bestStreakDiv: !!bestStreakDiv
+        });
+    }
+
+    // Make sure button is enabled initially
+    spinButton.disabled = false;
+
+    // Add click event listener
+    spinButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!isSpinning) {
+            spinReels();
+        }
+    });
+
+    // Add keyboard controls
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !isSpinning && !spinButton.disabled) {
+            e.preventDefault();
+            spinReels();
+        }
+    });
+
+    function getRandomSymbol() {
+        return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function updateReel(reel, symbol) {
+        const symbolElement = reel.querySelector('.slot-symbol i');
+        symbolElement.className = `bi ${symbol}`;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Animate a single reel
+    async function animateReel(reel, finalSymbol, delay) {
+        const symbolElement = reel.querySelector('.slot-symbol i');
+        const spinDuration = 2000 + Math.random() * 500; // Random duration between 2-2.5s
+        const startTime = Date.now();
+
+        // Start spinning fast
+        const spinInterval = setInterval(() => {
+            symbolElement.className = `bi ${getRandomSymbol()}`;
+        }, 50);
+
+        // Wait for delay before starting to slow down
+        await sleep(delay);
+
+        // Slow down animation
+        const slowDownDuration = 1000;
+        const slowDownStart = Date.now();
+
+        return new Promise(resolve => {
+            const slowDownInterval = setInterval(() => {
+                const elapsed = Date.now() - slowDownStart;
+                const progress = elapsed / slowDownDuration;
+
+                if (progress >= 1) {
+                    clearInterval(spinInterval);
+                    clearInterval(slowDownInterval);
+                    symbolElement.className = `bi ${finalSymbol}`;
+                    resolve();
+                } else {
+                    // Gradually increase interval between symbol changes
+                    const intervalTime = 50 + (progress * 200);
+                    if (Math.random() < progress) {
+                        symbolElement.className = `bi ${finalSymbol}`;
+                    } else {
+                        symbolElement.className = `bi ${getRandomSymbol()}`;
+                    }
+                }
+            }, 50);
+        });
+    }
+
+    function createConfetti(x, y, color) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.setProperty('--confetti-color', color);
+        confetti.style.left = x + 'px';
+        confetti.style.top = y + 'px';
+        document.body.appendChild(confetti);
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 3 + Math.random() * 2;
+        const rotation = Math.random() * 360;
+        const lifetime = 1000 + Math.random() * 1000;
+
+        confetti.animate([
+            {
+                transform: `translate(0, 0) rotate(${rotation}deg)`,
+                opacity: 1
+            },
+            {
+                transform: `translate(${Math.cos(angle) * 200}px, ${Math.sin(angle) * 200}px) rotate(${rotation + 720}deg)`,
+                opacity: 0
+            }
+        ], {
+            duration: lifetime,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        }).onfinish = () => confetti.remove();
+    }
+
+    function celebrateWin() {
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const rect = slotReels[0].getBoundingClientRect();
+                createConfetti(
+                    rect.left + Math.random() * rect.width * 3,
+                    rect.top + Math.random() * rect.height,
+                    colors[Math.floor(Math.random() * colors.length)]
+                );
+            }, Math.random() * 1000);
+        }
+    }
+
+    async function spinReels() {
+        if (isSpinning || !Array.isArray(slotReels) || slotReels.length !== 3) {
+            console.error('Cannot spin: invalid state', {
+                isSpinning,
+                reelsArray: Array.isArray(slotReels),
+                reelsLength: slotReels.length
+            });
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger mt-4">
+                    <h4 class="alert-heading">😔 Oops!</h4>
+                    <p class="mb-0">Something went wrong with the slot machine. Please refresh the page.</p>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            isSpinning = true;
+            spinButton.disabled = true;
+            resultDiv.textContent = '';
+            claimForm.style.display = 'none';
+
+            // Play spin sound
+            if (spinSound.readyState >= 2) {
+                spinSound.currentTime = 0;
+                spinSound.play().catch(console.error);
+            }
+
+            // Pull lever animation
+            lever.classList.add('pulled');
+
+            // Send spin request to server
+            const response = await fetch("{{ url_for('game.slot_machine') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    action: 'spin'
+                })
+            });
+
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+
+            if (!data.success) {
+                throw new Error('Spin failed: ' + (data.error || 'Unknown error'));
+            }
+
+            // Generate final symbols
+            let finalSymbols = [];
+            if (data.is_win) {
+                // Find the winning coupon's symbol
+                const winningCoupon = couponSymbols.find(c => c.code === data.coupon.code);
+                const winningSymbol = winningCoupon ? winningCoupon.icon : getRandomCouponSymbol();
+                finalSymbols = [winningSymbol, winningSymbol, winningSymbol];
+            } else {
+                // Generate different symbols for a loss
+                while (finalSymbols.length < 3) {
+                    const symbol = getRandomCouponSymbol();
+                    if (finalSymbols.length < 2 || symbol !== finalSymbols[0]) {
+                        finalSymbols.push(symbol);
+                    }
+                }
+            }
+
+            // Start spinning animation with delays for each reel
+            const spinPromises = slotReels.map((reel, index) => {
+                return new Promise(async (resolve) => {
+                    try {
+                        await animateReel(reel, finalSymbols[index], index * 400);
+                        resolve();
+                    } catch (error) {
+                        console.error('Reel animation error:', error);
+                        resolve();
+                    }
+                });
+            });
+
+            // Wait for all reels to stop
+            await Promise.all(spinPromises);
+
+            // Reset lever
+            lever.classList.remove('pulled');
+
+            if (data.is_win) {
+                // Play win sound
+                if (winSound.readyState >= 2) {
+                    winSound.currentTime = 0;
+                    winSound.play().catch(console.error);
+                }
+
+                // Update win streak
+                winStreak++;
+                if (winStreak > bestStreak) {
+                    bestStreak = winStreak;
+                    bestStreakDiv.textContent = bestStreak;
+                }
+                winStreakDiv.textContent = winStreak;
+
+                // Add jackpot effect
+                slotReels.forEach(reel => reel.classList.add('jackpot'));
+                setTimeout(() => slotReels.forEach(reel => reel.classList.remove('jackpot')), 500);
+
+                // Show confetti
+                celebrateWin();
+
+                // Display win message
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success mt-4">
+                        <h4 class="alert-heading">🎉 JACKPOT! 🎉</h4>
+                        <p class="mb-0">You won: ${data.coupon.description}</p>
+                    </div>
+                `;
+
+                // Set up claim form
+                couponCodeInput.value = data.coupon.code;
+                claimForm.style.display = 'block';
+            } else {
+                // Reset win streak
+                winStreak = 0;
+                winStreakDiv.textContent = winStreak;
+
+                // Display loss message
+                resultDiv.innerHTML = `
+                    <div class="alert alert-info mt-4">
+                        <h4 class="alert-heading">Almost there!</h4>
+                        <p class="mb-0">Try again for a chance to win!</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Detailed error:', error);
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger mt-4">
+                    <h4 class="alert-heading">😔 Oops!</h4>
+                    <p class="mb-0">Error: ${error.message}</p>
+                </div>
+            `;
+        } finally {
+            isSpinning = false;
+            spinButton.disabled = false;
+            lever.classList.remove('pulled');
+        }
+    }
+</script>
+{% endblock %}

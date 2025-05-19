@@ -14,7 +14,7 @@ class Order(db.Model):
     amount = db.mapped_column(db.Float(6,2), nullable=True, default=None)
     name = db.mapped_column(db.String(100), nullable=True, default="Untitled Cart")
 
-    items = db.relationship('ProductOrder', back_populates="order")
+    items = db.relationship('ProductOrder', back_populates="order", cascade="all, delete-orphan", passive_deletes=True)
     customer = db.relationship('Customer', back_populates='orders')
 
     def __repr__(self):
