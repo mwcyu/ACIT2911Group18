@@ -67,78 +67,186 @@
     </div>
 </div> #}
 
-<h2 class="mb-4">Featured Seasonal Products</h2>
-
-{% if current_user.is_authenticated %}
-<a class="btn btn-secondary mb-4" href="{{ url_for('cart.generate_cart') }}">
-    Generate Cart
-</a>
-<a class="btn btn-success mb-4" href="{{ url_for('spin_wheel') }}">
-    🎁 Spin the Wheel for a Coupon
-</a>
-<a class="btn btn-primary mb-4" href="{{ url_for('cart.new_cart') }}">
-    New Cart
-</a>
-{% endif %}
-
-{% if current_user["is_admin"] == True%}
-
-{% endif %}
-
-<a class="btn btn-primary mb-4" href="{{ url_for('game.slot_machine') }}"> 🎰 Play Slots for Discounts!</a>
-
-{% if products %}
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for product in products %}
-    <div class="col">
-        <div class="card h-100">
-            <img src="./static/images/{{ product.name }}.jpg" class="card-img-top"
-                style="height: 300px; object-fit: cover;" alt="{{ product.name }}">
-            <div class="card-body">
-                <a href="{{ url_for('products.individual_product_page',id=product.id)}}">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                </a>
-                <p class="card-text">
-                    <strong>Price:</strong> ${{ product.price }}<br />
-                    <strong>Available:</strong> {{ product.available }}
-                </p>
-
-                {% if current_user.is_authenticated %}
-                {% set cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list |
-                first %}
-                {% set cart_item = cart.items | selectattr("product_id", "equalto", product.id) | list | first if cart
-                else None %}
-
-                {% if cart_item %}
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <form action="{{ url_for('cart.update_cart_item', product_id=product.id) }}" method="POST"
-                        class="d-flex align-items-center gap-2">
-                        <div class="input-group">
-                            <input type="number" name="quantity" class="form-control" value="{{ cart_item.quantity }}"
-                                min="1" max="{{ product.available }}">
-                            <button type="submit" class="btn btn-primary">Update Cart</button>
+<div class="container-fluid px-0 mb-5">
+    <div id="carouselExampleIndicators" class="carousel slide" style="height: 350px;">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+                aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+                aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
+                aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner" style="height: 350px;">
+            <!-- First Slide -->
+            <div class="carousel-item active" style="height: 350px; background-color: #58a7f6;">
+                <div class="row h-100 align-items-center">
+                    <div class="col-md-6 text-center">
+                        <div class="p-5">
+                            <h1 class="display-4 fw-bold">Welcome to Our Store!</h1>
+                            <p class="lead">Discover amazing products at great prices</p>
+                            <a href="#featured-products" class="btn btn-primary btn-lg">Shop Now</a>
                         </div>
-                    </form>
-                    <a href="{{ url_for('cart.remove_cart_item', product_id=product.id) }}"
-                        class="btn btn-outline-danger">Remove</a>
+                    </div>
+                    <div class="col-md-6 h-100">
+                        <img src="{{ url_for('static', filename='backgrounds/greenonmarbletable.jpg') }}"
+                            class="d-block w-100 h-100" style="object-fit: cover;" alt="Spin Wheel Banner">
+                    </div>
                 </div>
+            </div>
 
-                {% else %}
-                <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-primary">Add to Cart</a>
-                {% endif %}
-                {% endif %}
+            <!-- Second Slide -->
+            <div class="carousel-item" style="height: 350px;">
+                <img src="{{ url_for('static', filename='Home Banner/ChatGPT Image May 18, 2025, 12_37_51 AM.png') }}"
+                    class="d-block w-100 h-100" style="object-fit: cover;" alt="Special Offers">
+                <div class="carousel-caption d-none d-md-block">
+                    <h2 class="display-4 fw-bold">Special Offers</h2>
+                    <p class="lead">Check out our latest deals and promotions</p>
+                </div>
             </div>
-            {% if product.category %}
-            <div class="card-footer text-muted">
-                Category: {{ product.category.name }}
+
+            <!-- Third Slide -->
+            <div class="carousel-item"
+                style="height: 350px; background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);">
+                <div class="container h-100">
+                    <div class="row h-100 align-items-center">
+                        <div class="col-12 text-center text-white">
+                            <h2 class="display-4 fw-bold">Play & Win!</h2>
+                            <p class="lead">Try our exciting games for amazing discounts</p>
+                            <div class="mt-4">
+                                <a href="{{ url_for('spin_wheel') }}" class="btn btn-light btn-lg mx-2">Spin the
+                                    Wheel</a>
+                                <button type="button" class="btn btn-outline-light btn-lg mx-2" data-bs-toggle="modal"
+                                    data-bs-target="#slotMachineModal">
+                                    Play Slots
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% endif %}
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<div id="featured-products">
+    <h2 class="mb-4">Featured Seasonal Products</h2>
+
+    {% if current_user.is_authenticated %}
+    <a class="btn btn-secondary mb-4" href="{{ url_for('cart.generate_cart') }}">
+        Generate Cart
+    </a>
+    <a href="{{ url_for('spin_wheel') }}" class="btn btn-success mb-4">
+        🎁 Spin the Wheel for a Coupon
+    </a>
+    <a class="btn btn-primary mb-4" href="{{ url_for('cart.new_cart') }}">
+        New Cart
+    </a>
+    {% endif %}
+
+    {% if current_user["is_admin"] == True%}
+
+    {% endif %}
+
+    <!-- Replace the slot machine link with a button that triggers the modal -->
+    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#slotMachineModal">
+        🎰 Play Slots for Discounts!
+    </button>
+
+    <!-- Slot Machine Modal -->
+    <div class="modal fade" id="slotMachineModal" tabindex="-1" aria-labelledby="slotMachineModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered"
+            style="max-width: 95%; height: 90vh; margin: 1rem auto;">
+            <div class="modal-content h-100">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="slotMachineModalLabel">🎰 Slot Machine</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="height: calc(90vh - 120px); overflow: hidden;">
+                    <div class="h-100">
+                        <div class="slot-machine-container h-100">
+                            <iframe src="{{ url_for('game.slot_machine') }}"
+                                style="width: 100%; height: 100%; border: none; display: block;"
+                                title="Slot Machine Game">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
-    {% endfor %}
+
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="./static/images/{{ product.name }}.jpg" class="card-img-top"
+                    style="height: 300px; object-fit: cover;" alt="{{ product.name }}">
+                <div class="card-body">
+                    <a href="{{ url_for('products.individual_product_page',id=product.id)}}">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                    </a>
+                    <p class="card-text">
+                        <strong>Price:</strong> ${{ product.price }}<br />
+                        <strong>Available:</strong> {{ product.available }}
+                    </p>
+
+                    {% if current_user.is_authenticated %}
+                    {% set cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list
+                    |
+                    first %}
+                    {% set cart_item = cart.items | selectattr("product_id", "equalto", product.id) | list | first if
+                    cart
+                    else None %}
+
+                    {% if cart_item %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <form action="{{ url_for('cart.update_cart_item', product_id=product.id) }}" method="POST"
+                            class="d-flex align-items-center gap-2">
+                            <div class="input-group">
+                                <input type="number" name="quantity" class="form-control"
+                                    value="{{ cart_item.quantity }}" min="1" max="{{ product.available }}">
+                                <button type="submit" class="btn btn-primary">Update Cart</button>
+                            </div>
+                        </form>
+                        <a href="{{ url_for('cart.remove_cart_item', product_id=product.id) }}"
+                            class="btn btn-outline-danger">Remove</a>
+                    </div>
+
+                    {% else %}
+                    <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-primary">Add to Cart</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% if product.category %}
+                <div class="card-footer text-muted">
+                    Category: {{ product.category.name }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">There are no seasonal products available right now. Please check back later!</p>
+    {% endif %}
 </div>
-{% else %}
-<p class="text-muted">There are no seasonal products available right now. Please check back later!</p>
-{% endif %}
 
 {% endblock %}
