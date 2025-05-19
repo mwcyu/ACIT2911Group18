@@ -66,18 +66,17 @@
       {% if discount and applied_coupon %}
       <div class="d-flex align-items-center gap-2">
         <div class="text-danger">-{{ applied_coupon.code }}: -${{ "%.2f"|format(discount) }}</div>
-        <a href="{{ url_for('cart.remove_coupon') }}" class="btn btn-sm btn-outline-danger">Remove</a>
       </div>
       <h5>New Total: <span class="text-success">${{ "%.2f"|format(total - discount) }}</span></h5>
       {% endif %}
 
 
-      {% for coupon in current_user.coupons %}
-      {% if coupon.minimum_purchase %}
-      {% set progress = (total / coupon.minimum_purchase * 100) | round %}
+
+      {% if applied_coupon and applied_coupon.minimum_purchase %}
+      {% set progress = (total / applied_coupon.minimum_purchase * 100) | round %}
       <div class="mt-3">
-        <small class="text-muted">Progress towards {{ coupon.code }} minimum purchase (${{
-          "%.2f"|format(coupon.minimum_purchase) }})</small>
+        <small class="text-muted">Progress towards {{ applied_coupon.code }} minimum purchase (${{
+          "%.2f"|format(applied_coupon.minimum_purchase) }})</small>
         <div class="progress" role="progressbar" style="height: 30px">
           <div class="progress-bar  
             {% if progress >= 100 %}
@@ -86,12 +85,12 @@
             bg-primary progress-bar-striped progress-bar-animated
             {% endif %}" style="width: {{ [100, progress]|min }}%" aria-valuenow="{{ progress }}" aria-valuemin="0"
             aria-valuemax="100">
-            ${{ "%.2f"|format(total) }} / ${{ "%.2f"|format(coupon.minimum_purchase) }}
+            ${{ "%.2f"|format(total) }} / ${{ "%.2f"|format(applied_coupon.minimum_purchase) }}
           </div>
         </div>
       </div>
       {% endif %}
-      {% endfor %}
+
     </div>
 
     <form method="post" action="{{ url_for('cart.apply_coupon') }}" class="d-flex align-items-center gap-2">

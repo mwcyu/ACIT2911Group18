@@ -5,9 +5,11 @@ from flask_login import LoginManager, login_required, current_user
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
+import random
 
 from db import db
 from models import Customer, Category, Product, Coupon, Season
+from routes.cart import get_applied_coupon
 
 # Load environment variables
 load_dotenv()
@@ -58,6 +60,31 @@ def create_app(config_override=None):
     from routes import register_blueprints
     register_blueprints(app)
 
+    def get_coupon_progress(user):
+        """Calculate coupon progress for the user's active cart."""
+        if not user.is_authenticated or not user.active_cart_id:
+            return None
+        
+        active_cart = next((o for o in user.orders if o.id == user.active_cart_id), None)
+        if not active_cart:
+            return None
+        
+        applied_coupon = get_applied_coupon(user)
+        if not applied_coupon or not applied_coupon.minimum_purchase:
+            return None
+        
+        total = active_cart.estimate()
+        progress = round((total / applied_coupon.minimum_purchase * 100))
+        remaining = max(0, applied_coupon.minimum_purchase - total)
+        
+        return {
+            'coupon': applied_coupon,
+            'total': total,
+            'progress': progress,
+            'remaining': remaining,
+            'is_complete': progress >= 100
+        }
+
     # --- Core Routes ---
     @app.route("/")
     @login_required
@@ -65,15 +92,26 @@ def create_app(config_override=None):
         categories = db.session.execute(db.select(Category)).scalars()
         products = db.session.execute(db.select(Product).where(Product.in_season == True)).scalars()
         active_season = db.session.execute(db.select(Season).where(Season.active == True)).scalar_one_or_none()
+        
+        # Get coupon progress data
+        coupon_progress = get_coupon_progress(current_user)
+        
         if active_season:
             return redirect(url_for(f"{active_season.name.lower()}_page"))
-        return render_template("home.html", categories=categories, products=products)
+        return render_template("home.html", 
+                             categories=categories, 
+                             products=products,
+                             coupon_progress=coupon_progress)
 
     @app.route("/<season>")
     def seasonal_page(season):
         categories = db.session.execute(db.select(Category)).scalars()
         products = db.session.execute(db.select(Product).where(Product.season_name == season)).scalars()
-        return render_template(f"{season}.html", categories=categories, products=products)
+        coupon_progress = get_coupon_progress(current_user)
+        return render_template(f"{season}.html", 
+                             categories=categories, 
+                             products=products,
+                             coupon_progress=coupon_progress)
 
     @app.route("/dashboard")
     @login_required
@@ -109,7 +147,12 @@ def create_app(config_override=None):
             "minimum_purchase": float(c.minimum_purchase) if c.minimum_purchase else None
         } for c in coupons]
 
-        return render_template("spin_wheel.html", wheel_coupons=wheel_data)
+        # Pre-select a random coupon
+        selected_coupon = random.choice(wheel_data)
+
+        return render_template("spin_wheel.html", 
+                             wheel_coupons=wheel_data,
+                             selected_coupon=selected_coupon)
 
     @app.route("/apply-coupon", methods=["POST"])
     @login_required

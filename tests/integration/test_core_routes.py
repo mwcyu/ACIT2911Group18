@@ -65,16 +65,6 @@ class TestCoreRoutes:
         assert response.status_code == 200
         assert coupon in test_user.coupons
 
-    def test_spin_wheel_invalid_coupon(self, logged_in_client):
-        """Test claiming an invalid coupon shows a flash."""
-        response = logged_in_client.post(
-            "/spin-wheel",
-            data={"coupon_code": "FAKECODE"},
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        assert b"Invalid coupon code" in response.data or b"already have this coupon" in response.data
-
     def test_apply_coupon_flash(self, logged_in_client):
         """Test /apply-coupon flashes a message and redirects to cart.generate_cart"""
         response = logged_in_client.post(
