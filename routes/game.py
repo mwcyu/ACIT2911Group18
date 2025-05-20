@@ -11,7 +11,10 @@ SYMBOLS = [
     'bi-heart',
     'bi-gem',
     'bi-trophy',
-    'bi-lightning'
+    'bi-lightning',
+    'bi-award',
+    'bi-dice-6',
+    'bi-stars'
 ]
 
 game_bp = Blueprint("game", __name__)

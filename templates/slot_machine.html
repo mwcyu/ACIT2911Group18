@@ -353,14 +353,6 @@
     </div>
 </div>
 
-<!-- Audio elements -->
-<audio id="spinSound" preload="auto">
-    <source src="{{ url_for('static', filename='sounds/spin.mp3') }}" type="audio/mpeg">
-</audio>
-<audio id="winSound" preload="auto">
-    <source src="{{ url_for('static', filename='sounds/win.mp3') }}" type="audio/mpeg">
-</audio>
-
 <script>
     // Initialize DOM elements
     const spinButton = document.getElementById('spinBtn');
@@ -371,8 +363,6 @@
     const lever = document.querySelector('.slot-lever');
     const winStreakDiv = document.getElementById('winStreak');
     const bestStreakDiv = document.getElementById('bestStreak');
-    const spinSound = document.getElementById('spinSound');
-    const winSound = document.getElementById('winSound');
 
     // Initialize game state
     const symbols = [
@@ -550,12 +540,6 @@
             resultDiv.textContent = '';
             claimForm.style.display = 'none';
 
-            // Play spin sound
-            if (spinSound.readyState >= 2) {
-                spinSound.currentTime = 0;
-                spinSound.play().catch(console.error);
-            }
-
             // Pull lever animation
             lever.classList.add('pulled');
 
@@ -621,12 +605,6 @@
             lever.classList.remove('pulled');
 
             if (data.is_win) {
-                // Play win sound
-                if (winSound.readyState >= 2) {
-                    winSound.currentTime = 0;
-                    winSound.play().catch(console.error);
-                }
-
                 // Update win streak
                 winStreak++;
                 if (winStreak > bestStreak) {

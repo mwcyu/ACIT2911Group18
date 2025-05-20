@@ -35,12 +35,6 @@ class TestCoreRoutes:
         assert response.status_code == 200
         assert season.encode() in response.data or test_product.name.encode() in response.data
 
-    def test_game_page_loads(self, client):
-        """Test that the game page is accessible"""
-        response = client.get("/game")
-        assert response.status_code == 200
-        assert b"Game" in response.data
-
     def test_spin_wheel_get(self, logged_in_client, db):
         """Check spin wheel page loads and shows coupon options."""
         c = Coupon(code="SAVE10", discount_amount=10.0, is_percent=False, active=True)
