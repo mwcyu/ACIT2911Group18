@@ -231,7 +231,7 @@ def update_cart_item(product_id: int):
         flash("Quantity updated.", "success")
 
     db.session.commit()
-    return redirect(url_for("cart.view_cart"))
+    return redirect(request.referrer or url_for("cart.view_cart"))
 
 
 @cart_bp.route("/remove/<int:product_id>")
@@ -247,7 +247,7 @@ def remove_cart_item(product_id: int):
     else:
         flash("Item not found in cart.", "warning")
 
-    return redirect(url_for("cart.view_cart"))
+    return redirect(request.referrer or url_for("cart.view_cart"))
 
 
 @cart_bp.route("/generate", methods=["GET", "POST"])

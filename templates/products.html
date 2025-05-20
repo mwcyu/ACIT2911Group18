@@ -1,15 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container py-4">
-  <h1 class="mb-4">All Products</h1>
-
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+      <i class="bi bi-shop me-2"></i>All Products
+    </h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('home_page') }}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Products</li>
+      </ol>
+    </nav>
+  </div>
   <!-- Filters -->
-  <div class="card mb-4">
+  <div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-primary bg-opacity-10">
+      <h5 class="m-0">
+        <i class="bi bi-funnel me-2"></i>Filter Products
+      </h5>
+    </div>
     <div class="card-body">
       <form method="GET" class="row g-3">
         <!-- Category Filter -->
         <div class="col-md-3">
-          <label for="category" class="form-label">Category</label>
+          <label for="category" class="form-label">
+            <i class="bi bi-tag me-1"></i>Category
+          </label>
           <select name="category" id="category" class="form-select">
             <option value="all" {% if category_filter=='all' %}selected{% endif %}>All Categories</option>
             {% for category in categories %}
@@ -22,7 +38,9 @@
 
         <!-- Season Filter -->
         <div class="col-md-3">
-          <label for="season" class="form-label">Season</label>
+          <label for="season" class="form-label">
+            <i class="bi bi-sun me-1"></i>Season
+          </label>
           <select name="season" id="season" class="form-select">
             <option value="all" {% if season_filter=='all' %}selected{% endif %}>All Seasons</option>
             {% for season in seasons %}
@@ -39,110 +57,122 @@
           <div class="form-check mt-2">
             <input type="checkbox" class="form-check-input" id="in_season" name="in_season" value="true" {% if
               in_season_filter %}checked{% endif %}>
-            <label class="form-check-label" for="in_season">In Season Only</label>
+            <label class="form-check-label" for="in_season">
+              <i class="bi bi-calendar-check me-1"></i>In Season Only
+            </label>
           </div>
         </div>
 
         <!-- Apply Filters Button -->
         <div class="col-md-3">
           <label class="form-label">&nbsp;</label>
-          <button type="submit" class="btn btn-primary d-block">Apply Filters</button>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary d-block">
+              <i class="bi bi-search me-1"></i>Apply Filters
+            </button>
+            <a href="{{ url_for('products.all_products_page') }}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </a>
+          </div>
         </div>
       </form>
     </div>
   </div>
+  <!-- Sort Options -->
+  <div class="mb-4">
+    <div class="d-flex align-items-center">
+      <span class="me-2">Sort by:</span>
+      <div class="btn-group" role="group">
+        <a href="{{ url_for('products.all_products_page', sort='name', sort_order='asc' if sort_by == 'name' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
+          class="btn btn-outline-secondary btn-sm {% if sort_by == 'name' %}active{% endif %}">
+          Name {{ '▲' if sort_by == 'name' and sort_order == 'asc' else '▼' if sort_by == 'name' else '' }}
+        </a>
+        <a href="{{ url_for('products.all_products_page', sort='price', sort_order='asc' if sort_by == 'price' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
+          class="btn btn-outline-secondary btn-sm {% if sort_by == 'price' %}active{% endif %}">
+          Price {{ '▲' if sort_by == 'price' and sort_order == 'asc' else '▼' if sort_by == 'price' else '' }}
+        </a>
+        <a href="{{ url_for('products.all_products_page', sort='season', sort_order='asc' if sort_by == 'season' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
+          class="btn btn-outline-secondary btn-sm {% if sort_by == 'season' %}active{% endif %}">
+          Season {{ '▲' if sort_by == 'season' and sort_order == 'asc' else '▼' if sort_by == 'season' else '' }}
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- Product Cards -->
+  <div class="row row-cols-1 row-cols-md-3 g-4"> {% for product in products %}
+    <div class="col">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='images/' + product.name + '.jpg') }}" class="card-img-top"
+          style="height: 300px; object-fit: cover;" alt="{{ product.name }}"
+          onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'; this.alt='Product Image'">
 
-  <!-- Products Table -->
-  <div class="table-responsive">
-    <table class="table table-hover table-striped">
-      <thead class="table-light">
-        <tr>
-          <th>
-            ID
-            <a href="{{ url_for('products.all_products_page', sort='id', sort_order='asc' if sort_by == 'id' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'id' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>
-            Product Name
-            <a href="{{ url_for('products.all_products_page', sort='name', sort_order='asc' if sort_by == 'name' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'name' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>
-            Price
-            <a href="{{ url_for('products.all_products_page', sort='price', sort_order='asc' if sort_by == 'price' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'price' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>
-            Inventory
-            <a href="{{ url_for('products.all_products_page', sort='available', sort_order='asc' if sort_by == 'available' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'available' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>
-            Category
-            <a href="{{ url_for('products.all_products_page', sort='category', sort_order='asc' if sort_by == 'category' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'category' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>
-            Season
-            <a href="{{ url_for('products.all_products_page', sort='season', sort_order='asc' if sort_by == 'season' and sort_order == 'desc' else 'desc', category=category_filter, season=season_filter, in_season=in_season_filter) }}"
-              class="text-decoration-none">
-              <i class="bi bi-arrow-{{ 'down' if sort_by == 'season' and sort_order == 'asc' else 'up' }}-short"></i>
-            </a>
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for product in products %}
-        <tr>
-          <td>
-            <a href="{{ url_for('products.individual_product_page', id=product.id)}}" class="text-decoration-none">
-              {{ product.id }}
-            </a>
-          </td>
-          <td>{{ product.name }}</td>
-          <td>${{ "%.2f"|format(product.price) }}</td>
-          <td>
+        <div class="card-body">
+          <a href="{{ url_for('products.individual_product_page', id=product.id)}}">
+            <h5 class="card-title">{{ product.name }}</h5>
+          </a>
+          <p class="card-text">
+            <strong>Price:</strong> ${{ "%.2f"|format(product.price) }}<br>
+            <strong>Available:</strong>
             <span
-              class="badge {% if product.available > 10 %}bg-success{% elif product.available > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+              class="{% if product.available > 10 %}text-success{% elif product.available > 0 %}text-warning{% else %}text-danger{% endif %}">
               {{ product.available }}
             </span>
-          </td>
-          <td>
-            <a href="{{ url_for('categories.category_detail', name=product.category.name) }}"
-              class="text-decoration-none">
-              {{ product.category.name }}
-            </a>
-          </td>
-          <td>
-            {{ product.season_name }}
             {% if product.in_season %}
-            <span class="badge bg-success">In Season</span>
+            <span class="badge bg-success ms-2">In Season</span>
             {% endif %}
-          </td>
-          <td>
-            {% if product.available > 0 %}
-            <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-sm btn-primary">
-              <i class="bi bi-cart-plus"></i> Add to Cart
-            </a>
-            {% else %}
-            <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            <br>
+            <small class="text-muted">
+              <strong>Category:</strong>
+              <a href="{{ url_for('categories.category_detail', name=product.category.name) }}">
+                {{ product.category.name }}
+              </a><br>
+              <strong>Season:</strong> {{ product.season_name }}
+            </small>
+          </p>
+
+          {% if current_user.is_authenticated %}
+          {% set cart = current_user.orders | selectattr("id", "equalto", current_user.active_cart_id) | list
+          |
+          first %}
+          {% set cart_item = cart.items | selectattr("product_id", "equalto", product.id) | list | first if
+          cart
+          else None %}
+
+          {% if cart_item %}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <form action="{{ url_for('cart.update_cart_item', product_id=product.id) }}" method="POST"
+              class="d-flex align-items-center gap-2">
+              <div class="input-group">
+                <input type="number" name="quantity" class="form-control" value="{{ cart_item.quantity }}" min="1"
+                  max="{{ product.available }}">
+                <button type="submit" class="btn btn-primary">Update Cart</button>
+              </div>
+            </form>
+            <a href="{{ url_for('cart.remove_cart_item', product_id=product.id) }}"
+              class="btn btn-outline-danger">Remove</a>
+          </div>
+
+          {% else %}
+          <a href="{{ url_for('cart.add_to_cart', id=product.id) }}" class="btn btn-primary">Add to Cart</a>
+          {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="card-footer text-muted">
+          ID: {{ product.id }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
+
+  <!-- Empty state message if no products -->
+  {% if not products %}
+  <div class="alert alert-info text-center p-5">
+    <i class="bi bi-exclamation-circle fs-3 mb-3 d-block"></i>
+    <h4>No products found</h4>
+    <p>Try changing your filter settings to see more products.</p>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

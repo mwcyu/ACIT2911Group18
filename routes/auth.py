@@ -60,6 +60,65 @@ def github_callback():
     return redirect(url_for("dashboard_page"))
 
 
+@auth_bp.route("/google")
+def google_oauth():
+    google = current_app.config['GOOGLE_OAUTH_CLIENT']
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@auth_bp.route("/callback/google")
+def google_callback():
+    google = current_app.config['GOOGLE_OAUTH_CLIENT']
+    try:
+        token = google.authorize_access_token()
+    except Exception as e:
+        flash(f"Google OAuth error: {str(e)}", "danger")
+        return redirect(url_for("auth.login"))
+    
+    user_info = google.get('userinfo').json()
+    google_id = str(user_info.get('id'))
+    email = user_info.get('email')
+    name = user_info.get('name', email.split('@')[0]) # Use name or derive from email
+
+    # Check if user exists by google_id
+    customer = db.session.scalar(
+        db.select(Customer).where(Customer.google_id == google_id)
+    )
+
+    if not customer and email:
+        # Check if user exists by email (if google_id didn't match)
+        customer = db.session.scalar(
+            db.select(Customer).where(Customer.email == email)
+        )
+        if customer:
+            # Link Google ID to existing email-matched account
+            customer.google_id = google_id
+            db.session.commit()
+
+    if not customer:
+        # Create new customer if no match by google_id or email
+        customer = Customer(
+            google_id=google_id,
+            name=name,
+            email=email,
+            # Initialize with a placeholder phone value that uses the google ID
+            # This is needed since phone is required but we don't get it from Google
+            phone=f"google_{google_id}"
+        )
+        db.session.add(customer)
+        db.session.commit()
+
+    login_user(customer)
+    session.update({
+        "customer_id": customer.id,
+        "customer_name": customer.name,
+        "cart": session.get("cart", {})
+    })
+    flash("Successfully logged in with Google!", "success")
+    return redirect(url_for("dashboard_page"))
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()

@@ -20,6 +20,7 @@ login_manager.login_view = "auth.login"
 
 oauth = OAuth()
 github = None  # will initialize later with app context
+google = None # will initialize later with app context
 
 def create_app(config_override=None):
     app = Flask(__name__)
@@ -50,6 +51,22 @@ def create_app(config_override=None):
         client_kwargs={"scope": "user:email"},
     )
     app.config["GITHUB_OAUTH_CLIENT"] = github
+
+    global google
+    google = oauth.register(
+        name='google',
+        client_id=os.getenv("GOOGLE_CLIENT_ID"),
+        client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+        access_token_url='https://accounts.google.com/o/oauth2/token',
+        access_token_params=None,
+        authorize_url='https://accounts.google.com/o/oauth2/auth',
+        authorize_params=None,
+        api_base_url='https://www.googleapis.com/oauth2/v1/',
+        userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # This is an OpenID Connect endpoint
+        client_kwargs={'scope': 'openid email profile'},
+        jwks_uri="https://www.googleapis.com/oauth2/v3/certs", # For token verification
+    )
+    app.config["GOOGLE_OAUTH_CLIENT"] = google
 
     @login_manager.user_loader
     def load_user(user_id):
