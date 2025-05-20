@@ -10,7 +10,7 @@ Admin Dashboard
 <div class="mb-4">
   <h4 class="mb-3">Season Controls</h4>
   <div class="mb-3 d-flex flex-wrap gap-3" aria-label="Season controls">
-    <a href="{{ url_for('admin.toggle_season_group', season='spring') }}"
+    <a href="{{ url_for('admin.toggle_season_group', season_name='spring') }}"
       class="btn btn-outline-success position-relative">
       🌸 Spring
       {% if spring_count > 0 %}
@@ -19,7 +19,7 @@ Admin Dashboard
       </span>
       {% endif %}
     </a>
-    <a href="{{ url_for('admin.toggle_season_group', season='summer') }}"
+    <a href="{{ url_for('admin.toggle_season_group', season_name='summer') }}"
       class="btn btn-outline-warning position-relative">
       ☀️ Summer
       {% if summer_count > 0 %}
@@ -28,7 +28,7 @@ Admin Dashboard
       </span>
       {% endif %}
     </a>
-    <a href="{{ url_for('admin.toggle_season_group', season='fall') }}"
+    <a href="{{ url_for('admin.toggle_season_group', season_name='fall') }}"
       class="btn btn-outline-danger position-relative">
       🍂 Autumn
       {% if autumn_count > 0 %}
@@ -37,7 +37,7 @@ Admin Dashboard
       </span>
       {% endif %}
     </a>
-    <a href="{{ url_for('admin.toggle_season_group', season='winter') }}"
+    <a href="{{ url_for('admin.toggle_season_group', season_name='winter') }}"
       class="btn btn-outline-info position-relative">
       ❄️ Winter
       {% if winter_count > 0 %}
@@ -46,7 +46,7 @@ Admin Dashboard
       </span>
       {% endif %}
     </a>
-    <a href="{{ url_for('admin.toggle_season_group', season='all season') }}"
+    <a href="{{ url_for('admin.toggle_season_group', season_name='all season') }}"
       class="btn btn-outline-primary position-relative">
       🔄 All Seasons
       {% if all_season_count > 0 %}
@@ -64,23 +64,30 @@ Admin Dashboard
   <div class="btn-group" role="group" aria-label="Season Toggle Buttons">
     {% for s in seasons %}
     {% if s.name != "all season" %}
-    <a href="{{ url_for('admin.toggle_active_season', season=s.name) }}"
+    <a href="{{ url_for('admin.toggle_active_season', season_name=s.name) }}"
       class="btn btn-outline-primary{% if s.active %} active{% endif %}">
       {{ s.name.capitalize() }}
     </a>
     {% endif %}
     {% endfor %}
-    <a href="{{ url_for('admin.toggle_active_season', season='default') }}"
+    <a href="{{ url_for('admin.toggle_active_season', season_name='default') }}"
       class="btn btn-outline-primary{% if not has_active %} active{% endif %}">
       Default
     </a>
   </div>
 </div>
 
-
-<div class="mb-3">
-  <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of
-    Season</a>
+<div class="mb-4">
+  <h4 class="mb-3">Global Inventory Actions</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('admin.turn_all_out_of_season') }}" class="btn btn-warning">Turn All Products Out of Season</a>
+    <form method="POST" action="{{ url_for('admin.add_inventory_to_all') }}"
+      class="d-inline-flex align-items-center ms-auto">
+      <input type="number" name="quantity_to_add" class="form-control form-control-sm me-2" style="width: 100px;"
+        placeholder="Qty" min="1" required>
+      <button type="submit" class="btn btn-sm btn-success">Add to All Inventory</button>
+    </form>
+  </div>
 </div>
 
 <table class="table table-striped">
@@ -90,6 +97,8 @@ Admin Dashboard
       <th>Category</th>
       <th>In Season?</th>
       <th>Toggle</th>
+      <th>Inventory</th>
+      <th>Update Inventory</th>
     </tr>
   </thead>
   <tbody>
@@ -99,14 +108,17 @@ Admin Dashboard
       <td>{{ product.category.name }}</td>
       <td>{{ "✅" if product.in_season else "❌" }}</td>
       <td>
-        <a href="{{ url_for('admin.toggle_season', product_id=product.id) }}"
-          class="btn btn-sm {{ 'btn-success' if not product.in_season else 'btn-danger' }}">
-          {% if product.in_season %}
-          Remove
-          {% else %}
-          Add
-          {% endif %}
-        </a>
+        <a href="{{ url_for('admin.toggle_season', product_id=product.id) }}" class="btn btn-sm btn-secondary">Toggle
+          Season</a>
+      </td>
+      <td>{{ product.available }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('admin.update_inventory', product_id=product.id) }}"
+          class="d-inline-flex align-items-center">
+          <input type="number" name="quantity" class="form-control form-control-sm me-2" style="width: 70px;"
+            value="{{ product.available }}">
+          <button type="submit" class="btn btn-sm btn-primary">Update</button>
+        </form>
       </td>
     </tr>
     {% endfor %}

@@ -16,6 +16,7 @@ class Customer(db.Model, UserMixin):
 
     id = db.mapped_column(db.Integer, primary_key=True)
     github_id = db.mapped_column(db.Integer, nullable=True, unique=True)
+    google_id = db.mapped_column(db.String, nullable=True, unique=True)
     name = db.mapped_column(db.String)
     phone = db.mapped_column(db.String, unique=True)
     email = db.mapped_column(db.String, unique=True, nullable=True)

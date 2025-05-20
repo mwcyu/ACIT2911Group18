@@ -2,71 +2,6 @@
 {% block pagetitle %}Home{% endblock %}
 {% block content %}
 
-{# <style>
-    .seasons-nav {
-        background: linear-gradient(120deg, #f3f4f6 0%, #e5e7eb 100%);
-        padding: 2rem;
-        border-radius: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .season-link {
-        text-decoration: none;
-        transition: transform 0.3s ease;
-        display: inline-block;
-    }
-
-    .season-link:hover {
-        transform: translateY(-3px);
-    }
-</style>
-
-<div class="seasons-nav text-center">
-    <h2 class="mb-4">Shop By Season</h2>
-    <div class="row g-4">
-        <div class="col-md-3">
-            <a href="{{ url_for('spring_page') }}" class="season-link">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3>🌸 Spring</h3>
-                        <p class="text-muted">Fresh & New Beginnings</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <a href="{{ url_for('summer_page') }}" class="season-link">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3>☀️ Summer</h3>
-                        <p class="text-muted">Bright & Refreshing</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <a href="{{ url_for('autumn_page') }}" class="season-link">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3>🍂 Autumn</h3>
-                        <p class="text-muted">Cozy & Harvest</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <a href="{{ url_for('winter_page') }}" class="season-link">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3>❄️ Winter</h3>
-                        <p class="text-muted">Warm & Festive</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
-</div> #}
-
 <div class="container-fluid px-0 mb-5">
     <div id="carouselExampleIndicators" class="carousel slide" style="height: 350px;">
         <div class="carousel-indicators">
@@ -97,11 +32,17 @@
 
             <!-- Second Slide -->
             <div class="carousel-item" style="height: 350px;">
-                <img src="{{ url_for('static', filename='Home Banner/ChatGPT Image May 18, 2025, 12_37_51 AM.png') }}"
-                    class="d-block w-100 h-100" style="object-fit: cover;" alt="Special Offers">
-                <div class="carousel-caption d-none d-md-block">
-                    <h2 class="display-4 fw-bold">Special Offers</h2>
-                    <p class="lead">Check out our latest deals and promotions</p>
+                <div class="row h-100 align-items-center">
+                    <div class="col-md-6 text-center">
+                        <h1 class="display-4 fw-bold">In a Rush?</h1>
+                        <p class="lead">Fresh Picks. Smart Budget.</p>
+                        <p>Try Our Smart Cart Generater</p>
+                        <a href="{{ url_for('cart.generate_cart') }}" class="btn btn-primary btn-lg">Generate Cart</a>
+                    </div>
+                    <div class="col-md-6 h-100">
+                        <img src="{{ url_for('static', filename='backgrounds/tom-paolini-nXKDqpmdx_8-unsplash.jpg') }}"
+                            class="d-block w-100 h-100" style="object-fit: cover;" alt="Special Offers">
+                    </div>
                 </div>
             </div>
 

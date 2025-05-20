@@ -50,7 +50,7 @@ def all_products_page():
     
     # Execute the query
     products = db.session.execute(stmt).scalars()
-
+    
     return render_template("products.html",
                          products=products,
                          categories=categories,
