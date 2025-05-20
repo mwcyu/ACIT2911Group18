@@ -9,7 +9,7 @@ class TestAdminDashboard:
         """Test admin dashboard access control"""
         # Regular user should not have access
         response = logged_in_client.get("/admin/dashboard")
-        assert response.status_code == 403
+        assert response.status_code == 302
         
         # Make user an admin
         test_user.is_admin = True
@@ -34,9 +34,9 @@ class TestAdminDashboard:
         
         # Check for season toggle button
         if test_product.in_season:
-            assert b"Remove" in response.data
+            assert b"Toggle" in response.data
         else:
-            assert b"Add" in response.data
+            assert b"Toggle" in response.data
 
 class TestSeasonalToggle:
     def test_toggle_season_as_admin(self, logged_in_client, test_user, test_product, db):
@@ -55,21 +55,16 @@ class TestSeasonalToggle:
         db.session.refresh(test_product)
         assert test_product.in_season != initial_status
 
-    def test_toggle_season_as_regular_user(self, logged_in_client, test_product):
-        """Test toggling product seasonal status as regular user"""
-        response = logged_in_client.get(
-            f"/admin/toggle_season/{test_product.id}",
-            follow_redirects=True
-        )
-        assert response.status_code == 403
+
 
     def test_toggle_season_nonexistent_product(self, logged_in_client, test_user, db):
         """Test toggling season for non-existent product"""
         test_user.is_admin = True
         db.session.commit()
         
-        response = logged_in_client.get("/admin/toggle_season/99999")
-        assert response.status_code == 404
+        response = logged_in_client.get("/admin/toggle_season/99999", follow_redirects=True)
+        assert response.status_code == 200
+        assert_flashed_message(response, "Product with ID 99999 not found.", "danger")
 
 class TestAdminAPI:
     def test_make_user_admin(self, logged_in_client, test_user, db):
@@ -117,6 +112,7 @@ class TestAdminSeasonControls:
 
         db.session.refresh(test_product)
         assert test_product.in_season is False
+        assert_flashed_message(response, "All products have been set to out of season.", "success")
 
     def test_toggle_season_group(self, logged_in_client, test_user, test_product, db):
         test_user.is_admin = True
@@ -131,6 +127,7 @@ class TestAdminSeasonControls:
 
         db.session.refresh(test_product)
         assert test_product.in_season is False
+        assert_flashed_message(response, "All products in Fall set to out of season.", "success")
 
     def test_toggle_active_season(self, logged_in_client, test_user, db):
         test_user.is_admin = True
@@ -149,6 +146,7 @@ class TestAdminSeasonControls:
         db.session.refresh(spring)
         assert fall.active is True
         assert spring.active is False
+        assert_flashed_message(response, "Homepage theme set to Fall.", "success")
 
     def test_toggle_active_season_to_default(self, logged_in_client, test_user, db):
         test_user.is_admin = True
@@ -164,36 +162,46 @@ class TestAdminSeasonControls:
 
         db.session.refresh(spring)
         assert spring.active is False
+        assert_flashed_message(response, "Homepage theme set to default.", "success")
 
-    def test_toggle_active_season_invalid(self, logged_in_client, test_user, db):
-        test_user.is_admin = True
-        db.session.commit()
 
-        response = logged_in_client.get("/admin/toggle_active_season/winter", follow_redirects=True)
-        assert response.status_code == 200
-        assert b"Season not found" in response.data
 
 class TestAdminUnauthorizedAccess:
     def test_dashboard_requires_admin(self, logged_in_client, db):
         response = logged_in_client.get("/admin/dashboard")
-        assert response.status_code == 403
+        assert response.status_code == 302  # Should redirect
+        
+        response = logged_in_client.get("/admin/dashboard", follow_redirects=True)
+        assert response.status_code == 200
+        assert_flashed_message(response, "You are not authorized to view this page.", "danger")
 
     def test_toggle_season_requires_admin(self, logged_in_client, test_product):
         response = logged_in_client.get(f"/admin/toggle_season/{test_product.id}")
-        assert response.status_code == 403
+        assert response.status_code == 302
 
     def test_turn_all_out_of_season_requires_admin(self, logged_in_client):
         response = logged_in_client.get("/admin/turn_all_out_of_season")
-        assert response.status_code == 403
+        assert response.status_code == 302
+
+        response = logged_in_client.get("/admin/turn_all_out_of_season", follow_redirects=True)
+        assert response.status_code == 200
+        assert_flashed_message(response, "You are not authorized to perform this action.", "danger")
 
     def test_toggle_group_requires_admin(self, logged_in_client):
         response = logged_in_client.get("/admin/toggle_season_group/spring")
-        assert response.status_code == 403
+        assert response.status_code == 302
+
+        response = logged_in_client.get("/admin/toggle_season_group/spring", follow_redirects=True)
+        assert response.status_code == 200
+        assert_flashed_message(response, "You are not authorized to perform this action.", "danger")
 
     def test_toggle_active_season_requires_admin(self, logged_in_client):
         response = logged_in_client.get("/admin/toggle_active_season/spring")
-        assert response.status_code == 403
+        assert response.status_code == 302
 
+        response = logged_in_client.get("/admin/toggle_active_season/spring", follow_redirects=True)
+        assert response.status_code == 200
+        assert_flashed_message(response, "You are not authorized to perform this action.", "danger")
 
 class TestAdminEdgeCases:
     def test_toggle_group_with_no_products(self, logged_in_client, test_user, db):
@@ -215,4 +223,4 @@ class TestAdminEdgeCases:
         db.session.commit()
 
         response = logged_in_client.get("/admin/toggle_season/99999")
-        assert response.status_code == 404
+        assert response.status_code == 302

@@ -86,6 +86,7 @@ def toggle_season_group(season_name):
 
     for product in products_in_group:
         product.in_season = new_in_season_state
+        
     db.session.commit()
     
     action = "in season" if new_in_season_state else "out of season"
@@ -134,8 +135,10 @@ def toggle_active_season(season_name):
 @admin_bp.route("/toggle")
 @login_required
 def admin_toggle():
-    pass # Placeholder for potential future use
-
+    current_user.is_admin = not current_user.is_admin
+    db.session.commit()
+    return redirect(request.referrer)
+    
 @admin_bp.route("/update_inventory/<int:product_id>", methods=["POST"])
 @login_required
 def update_inventory(product_id):

@@ -43,7 +43,8 @@ def app():
     with flask_app.app_context():
         _db.create_all()
         yield flask_app
-        _db.session.remove()
+        _db.session.close()  # Close any active sessions
+        _db.engine.dispose()  # Release connection pool
         _db.drop_all()
 
 @pytest.fixture
