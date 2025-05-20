@@ -8,7 +8,7 @@
 {% block content %}
 <h1>{{ product.name }}</h1>
 
-<img src="{{ url_for('static', filename='images/' ~ (product.name | replace(' ', '_') | lower ~ '.jpg')) }}"
+<img src="{{ url_for('static', filename='images/' + product.name + '.jpg') }}"
   onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.jpg') }}';"
   alt="Image of {{ product.name }}" class="img-fluid mb-3" style="max-height: 300px;">
 
