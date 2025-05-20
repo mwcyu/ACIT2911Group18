@@ -2,7 +2,6 @@ name,price,available,category,in_season,season
 apple,1.49,10,produce,True,fall
 asparagus,4.99,10,produce,True,spring
 banana,1.29,10,produce,True,all season
-bananas,3.49,5,produce,False,all season
 bell pepper,3.29,18,produce,True,summer
 blueberries,6.49,20,produce,True,summer
 broccoli,2.79,8,produce,True,spring

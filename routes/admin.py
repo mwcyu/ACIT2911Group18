@@ -86,7 +86,6 @@ def toggle_season_group(season_name):
 
     for product in products_in_group:
         product.in_season = new_in_season_state
-        
     db.session.commit()
     
     action = "in season" if new_in_season_state else "out of season"
@@ -132,12 +131,20 @@ def toggle_active_season(season_name):
     return redirect(url_for("admin.admin_dashboard"))
 
 
-@admin_bp.route("/toggle")
+@admin_bp.route("/toggle", methods=["POST"]) # Changed to POST
 @login_required
 def admin_toggle():
     current_user.is_admin = not current_user.is_admin
     db.session.commit()
-    return redirect(request.referrer)
+
+    if current_user.is_admin:
+        flash("Admin mode activated.", "success")
+    else:
+        flash("Admin mode deactivated.", "info")
+    
+    # Redirect to the page the user was on, or home as a fallback
+    # For simplicity, redirecting to home. A more robust solution might use request.referrer.
+    return redirect(request.referrer or url_for("home_page"))
     
 @admin_bp.route("/update_inventory/<int:product_id>", methods=["POST"])
 @login_required

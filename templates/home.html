@@ -130,9 +130,12 @@
     <a class="btn btn-primary mb-4" href="{{ url_for('cart.new_cart') }}">
         New Cart
     </a>
-    <a class="btn btn-info mb-4" href="{{ url_for('admin.admin_toggle') }}">
-        Admin Toggle
-    </a>
+    {# Form for Admin Toggle #}
+    <form method="POST" action="{{ url_for('admin.admin_toggle') }}" style="display: inline;">
+        <button type="submit" class="btn btn-info mb-4">
+            Admin Toggle
+        </button>
+    </form>
     {% endif %}
 
     {% if current_user["is_admin"] == True%}
