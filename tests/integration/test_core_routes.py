@@ -37,7 +37,7 @@ class TestCoreRoutes:
 
     def test_spin_wheel_get(self, logged_in_client, db):
         """Check spin wheel page loads and shows coupon options."""
-        c = Coupon(code="SAVE10", discount_amount=10.0, is_percent=False, active=True)
+        c = Coupon(code="SAVE10", discount_amount=10.0, is_percent=False, active=True, wheel_label="10%")
         db.session.add(c)
         db.session.commit()
 
@@ -47,7 +47,7 @@ class TestCoreRoutes:
 
     def test_spin_wheel_claim_coupon(self, logged_in_client, test_user, db):
         """Ensure a coupon can be claimed by a user."""
-        coupon = Coupon(code="EXTRA5", discount_amount=5.0, is_percent=False, active=True)
+        coupon = Coupon(code="EXTRA5", discount_amount=5.0, is_percent=False, active=True, wheel_label="10%")
         db.session.add(coupon)
         db.session.commit()
 
