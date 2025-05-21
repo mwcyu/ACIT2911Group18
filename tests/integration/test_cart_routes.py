@@ -165,7 +165,7 @@ class TestCartRenameAndCoupon:
 
     def test_apply_valid_coupon(self, logged_in_client, test_user, test_product, db):
         from models import Coupon
-        coupon = Coupon(code="SAVE10", discount_amount=10, is_percent=False, active=True)
+        coupon = Coupon(code="SAVE10", discount_amount=10, is_percent=False, active=True, wheel_label="10%")
         test_user.coupons.append(coupon)
         db.session.add(coupon)
         db.session.commit()

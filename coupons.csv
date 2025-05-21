@@ -1,12 +1,12 @@
-code,description,minimum_purchase,discount_amount,is_percent,active
-SAVE50,$50 off orders over $100,100,50,False,True
-SAVE25,$25 off orders over $50,50,25,False,True
-PERCENT10,10% off orders over $20,20,10,True,True
-WELCOME15,15% off first order over $25,25,15,True,True
-SPRING20,20% off seasonal items over $40,40,20,True,True
-SAVE5,$5 off orders over $25,25,5,False,True
-LOYALTY30,$30 off orders over $150,150,30,False,True
-SUMMER10,10% off summer items over $30,30,10,True,True
-FALL25,$25 off orders over $50,50,25,False,True
-WINTER15,15% off winter items over $20,20,15,True,True
-BLACKFRIDAY,40% off orders over $100,100,40,True,True
+code,description,minimum_purchase,discount_amount,is_percent,active,wheel_label
+SAVE50,$50 off orders over $100,100,50,False,True,$50 OFF
+SAVE25,$25 off orders over $50,50,25,False,True,$25 OFF
+PERCENT10,10% off orders over $20,20,10,True,True,10% OFF
+WELCOME15,15% off first order over $25,25,15,True,True,15% OFF
+SPRING20,20% off seasonal items over $40,40,20,True,True,20% SEASONAL
+SAVE5,$5 off orders over $25,25,5,False,True,$5 OFF
+LOYALTY30,$30 off orders over $150,150,30,False,True,$30 OFF
+SUMMER10,10% off summer items over $30,30,10,True,True,10% SUMMER
+FALL25,$25 off orders over $50,50,25,False,True,$25 FALL
+WINTER15,15% off winter items over $20,20,15,True,True,15% WINTER
+BLACKFRIDAY,40% off orders over $100,100,40,True,True,40% OFF

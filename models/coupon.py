@@ -11,6 +11,7 @@ class Coupon(db.Model):
     discount_amount = db.mapped_column(db.Float, nullable=False)  # Discount value (could be percent or fixed)
     is_percent = db.mapped_column(db.Boolean, default=False)      # True if discount_amount is a percent
     active = db.mapped_column(db.Boolean, default=True)
+    wheel_label = db.mapped_column(db.String, nullable=False)
     # Relationship to customers who own this coupon
     owners = db.relationship(
         "Customer",
