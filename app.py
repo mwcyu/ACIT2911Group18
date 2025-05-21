@@ -113,8 +113,7 @@ def create_app(config_override=None):
         # Get coupon progress data
         coupon_progress = get_coupon_progress(current_user)
         
-        
-        if active_season and (active_season.name.lower() in ("winter", "spring", "summer", "fall")):
+        if active_season:
             return redirect(url_for(f"{active_season.name.lower()}_page"))
         return render_template("home.html", 
                              categories=categories, 
@@ -126,14 +125,10 @@ def create_app(config_override=None):
         categories = db.session.execute(db.select(Category)).scalars()
         products = db.session.execute(db.select(Product).where(Product.season_name == season)).scalars()
         coupon_progress = get_coupon_progress(current_user)
-        
-        if (season in ("winter", "spring", "summer", "fall")):
-            return render_template(f"{season}.html", 
-                                categories=categories, 
-                                products=products,
-                                coupon_progress=coupon_progress)
-        else:
-            return redirect(url_for("home_page"))
+        return render_template(f"{season}.html", 
+                             categories=categories, 
+                             products=products,
+                             coupon_progress=coupon_progress)
 
     @app.route("/dashboard")
     @login_required
@@ -208,6 +203,7 @@ def create_app(config_override=None):
         categories = db.session.execute(db.select(Category)).scalars()
         products = db.session.execute(db.select(Product).where(Product.season_name == "winter")).scalars()
         return render_template("winter.html", categories=categories, current_user=current_user, products=products)
+    
 
     return app
 

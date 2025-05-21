@@ -226,20 +226,20 @@
         return gradient;
     }
 
-    function drawWheel() {
+    function drawWheel(displayCoupons = coupons) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         const radius = Math.min(centerX, centerY) - 10;
+        const localSegments = displayCoupons.length;
+        const localSegmentAngle = (2 * Math.PI) / localSegments;
 
-        // Draw segments
-        coupons.forEach((coupon, index) => {
-            const startAngle = index * segmentAngle;
-            const endAngle = startAngle + segmentAngle;
-            const baseHue = (index * 360 / segments) % 360;
+        displayCoupons.forEach((coupon, index) => {
+            const startAngle = index * localSegmentAngle;
+            const endAngle = startAngle + localSegmentAngle;
+            const baseHue = (index * 360 / localSegments) % 360;
 
-            // Draw segment
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -247,17 +247,15 @@
             ctx.fillStyle = createGradient(centerX, centerY, radius, startAngle, endAngle, baseHue);
             ctx.fill();
 
-            // Add shine effect
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius * 0.95, startAngle, endAngle);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Draw text
             ctx.save();
             ctx.translate(centerX, centerY);
-            ctx.rotate(startAngle + segmentAngle / 2);
+            ctx.rotate(startAngle + localSegmentAngle / 2);
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#ffffff';
@@ -268,7 +266,6 @@
             ctx.restore();
         });
 
-        // Draw center circle
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius * 0.15, 0, 2 * Math.PI);
         ctx.fillStyle = '#ffffff';
@@ -277,6 +274,7 @@
         ctx.lineWidth = 3;
         ctx.stroke();
     }
+
 
     function createConfetti(x, y, color) {
         const confetti = document.createElement('div');
@@ -320,7 +318,9 @@
     }
 
     spinButton.addEventListener('click', () => {
+
         if (isSpinning) return;
+        drawWheel();
 
         isSpinning = true;
         spinButton.disabled = true;
@@ -353,11 +353,18 @@
                 couponCodeInput.value = selectedCoupon.code;
 
                 resultDiv.innerHTML = `
-                <div class="alert alert-success mt-4 result-animation">
-                    <h4 class="alert-heading">🎉 Congratulations! 🎉</h4>
-                    <p class="mb-0">You won: ${selectedCoupon.description}</p>
-                </div>
-            `;
+                        <div class="alert alert-success mt-4 result-animation">
+                            <h4 class="alert-heading">🎉 Congratulations! 🎉</h4>
+                            <p class="mb-0">You won: ${selectedCoupon.description}</p>
+                        </div>
+                    `;
+
+                    claimForm.style.display = 'block';
+
+                    // 🔁 Replace wheel with all segments showing the winning coupon
+                    const updatedCoupons = Array(segments).fill(selectedCoupon);
+                    drawWheel(updatedCoupons);
+
 
                 claimForm.style.display = 'block';
 
