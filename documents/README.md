@@ -4,9 +4,6 @@ Setup:
 python -m venv venv
 source venv/bin/activate  # or Scripts\activate on Windows
 pip install -r requirements.txt
-
-python manage.py reset
-python app.py
 ```
 
 May 2nd
