@@ -341,7 +341,7 @@
                         </td>
                         <td>
                             <div class="prize-description">
-                                {{ coupon.description }}
+                                {{ coupon.wheel_label }}
                             </div>
                         </td>
                         <td>{{ coupon.odds }}%</td>
@@ -624,7 +624,7 @@
                 resultDiv.innerHTML = `
                     <div class="alert alert-success mt-4">
                         <h4 class="alert-heading">🎉 JACKPOT! 🎉</h4>
-                        <p class="mb-0">You won: ${data.coupon.description}</p>
+                        <p class="mb-0">You won: ${data.coupon.wheel_label}</p>
                     </div>
                 `;
 

@@ -49,6 +49,7 @@ def slot_machine():
                             "coupon": {
                                 "code": selected_coupon.code,
                                 "description": selected_coupon.description,
+                                "wheel_label": selected_coupon.wheel_label,
                                 "icon": icon
                             }
                         })
@@ -100,6 +101,7 @@ def slot_machine():
             slot_data.append({
                 "code": coupon.code,
                 "description": coupon.description,
+                "wheel_label": coupon.wheel_label,
                 "discount_amount": float(coupon.discount_amount),
                 "is_percent": coupon.is_percent,
                 "minimum_purchase": float(coupon.minimum_purchase) if coupon.minimum_purchase else None,
@@ -112,6 +114,7 @@ def slot_machine():
             slot_data = [{
                 "code": "NO_PRIZE",
                 "description": "No prizes available",
+                "wheel_label": "No Prize",
                 "discount_amount": 0,
                 "is_percent": False,
                 "minimum_purchase": None,
