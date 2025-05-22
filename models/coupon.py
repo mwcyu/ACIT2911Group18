@@ -11,17 +11,16 @@ class Coupon(db.Model):
     discount_amount = db.mapped_column(db.Float, nullable=False)  # Discount value (could be percent or fixed)
     is_percent = db.mapped_column(db.Boolean, default=False)      # True if discount_amount is a percent
     active = db.mapped_column(db.Boolean, default=True)
-    wheel_label = db.mapped_column(db.String, nullable=False)
-    # Relationship to customers who own this coupon
+    wheel_label = db.mapped_column(db.String, nullable=True)
     owners = db.relationship(
         "Customer",
         secondary=customer_coupons,
         back_populates="coupons"
     )
-
+    
     def __repr__(self):
-        return f"<Coupon {self.code} - {'%' if self.is_percent else '$'}{self.discount_amount}"
-
+        return f"<Coupon {self.code} - {'%' if self.is_percent else '$'}{self.discount_amount}>"
+        
     def to_json(self):
         return {
             "id": self.id,
@@ -30,5 +29,6 @@ class Coupon(db.Model):
             "minimum_purchase": self.minimum_purchase,
             "discount_amount": self.discount_amount,
             "is_percent": self.is_percent,
-            "active": self.active
+            "active": self.active,
+            "wheel_label": self.wheel_label
         }
