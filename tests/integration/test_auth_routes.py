@@ -1,7 +1,11 @@
 from datetime import datetime, timezone, UTC
 import pytest
-from flask import session
+from unittest.mock import MagicMock
+from flask import session, current_app, url_for
 from tests.conftest import assert_flashed_message
+from models import Customer
+from db import db
+from flask_login import login_user
 
 
 class TestLogin:
@@ -145,3 +149,103 @@ class TestPasswordReset:
         assert response.status_code == 200
         assert_flashed_message(response,
             "The reset link is invalid or expired.", "danger")
+
+
+class TestOAuth:
+    def test_google_oauth_redirect(self, client):
+        """Test Google OAuth redirect"""
+        response = client.get("/auth/google")
+        assert response.status_code == 302
+        assert "accounts.google.com" in response.location
+
+    def test_google_callback_error_handling(self, client):
+        """Test Google OAuth error handling"""
+        with client:
+            response = client.get("/auth/callback/google", follow_redirects=True)
+            assert response.status_code == 200  
+            assert b"Google OAuth error" in response.data
+
+    def test_github_callback_new_user(self, client, monkeypatch):
+        """Test GitHub OAuth callback for new user"""
+        class MockResponse:
+            def json(self):
+                if self.endpoint == "user":
+                    return {
+                        "id": "12345",
+                        "login": "testuser",
+                    }
+                elif self.endpoint == "user/emails":
+                    return [{
+                        "email": "test@github.com",
+                        "primary": True,
+                        "verified": True
+                    }]
+        
+        def mock_get(endpoint):
+            response = MockResponse()
+            response.endpoint = endpoint
+            return response
+
+        mock_github = MagicMock()
+        mock_github.authorize_access_token.return_value = {"access_token": "test_token"}
+        mock_github.get.side_effect = mock_get
+
+        with client.application.app_context():
+            current_app.config['GITHUB_OAUTH_CLIENT'] = mock_github
+            
+            with client:
+                response = client.get("/auth/callback/github", follow_redirects=True)
+                assert response.status_code == 200
+                assert session.get("customer_name") == "testuser"
+
+
+class TestLogout:
+    def test_logout_clears_session(self, client, test_user):
+        """Test logout clears session data"""
+        # Log in first
+        with client.session_transaction() as sess:
+            sess["customer_id"] = test_user.id
+            sess["customer_name"] = test_user.name
+            sess["cart"] = {}
+
+        with client:
+            # Verify we're logged in
+            response = client.get("/dashboard", follow_redirects=True)
+            assert response.status_code == 200
+
+            # Now logout
+            response = client.post("/auth/logout")
+            assert response.status_code == 302  # Redirect after logout
+            assert session.get("customer_id") is None
+            assert session.get("customer_name") is None
+            assert session.get("cart") is None
+
+    def test_logout_redirects_to_home(self, client):
+        """Test logout redirects to home page"""
+        response = client.post("/auth/logout")
+        assert response.status_code == 302
+        assert "/" in response.location
+
+class TestOAuthEdgeCases:
+    def test_google_callback_existing_email(self, client, test_user, monkeypatch, db):
+        """Test Google OAuth links account when email matches"""
+        mock_google = MagicMock()
+        mock_google.authorize_access_token.return_value = {"access_token": "test_token"}
+        mock_google.get.return_value.json.return_value = {
+            "id": "newgoogleid",
+            "email": test_user.email,
+            "name": "Google User"
+        }
+
+        with client.application.app_context():
+            current_app.config['GOOGLE_OAUTH_CLIENT'] = mock_google
+
+            with client:
+                response = client.get("/auth/callback/google", follow_redirects=True)
+                assert response.status_code == 200
+
+                # Query the user fresh from db instead of refreshing
+                updated_user = db.session.scalar(
+                    db.select(Customer).where(Customer.id == test_user.id)
+                )
+                assert updated_user.google_id == "newgoogleid"
