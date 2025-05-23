@@ -1,52 +1,103 @@
-Setup:
+# Seasonal Product Management System
+
+A Flask-based e-commerce system that manages seasonal products, orders, and customer carts with features like OAuth authentication, admin controls, and coupon management.
+
+## Features
+
+### Authentication & Security
+
+- Multi-provider OAuth support (Google, GitHub)
+- Two-factor authentication (2FA)
+- Password reset functionality
+- CSRF protection using Flask-WTF
+- Role-based access control (Admin/Customer)
+
+### Shopping Experience
+
+- Browse products by category and season
+- View product availability and pricing
+- Dark mode support
+
+### Cart Management
+
+- Multiple active carts per customer
+- Add/remove products
+- Update quantities
+- Apply coupon codes
+- Generate random cart within budget
+- Cart naming and switching
+
+### Admin Features
+
+- Toggle product seasons
+- Update inventory stock
+- Manage seasonal product availability
+- View customer orders and details
+
+### Order System
+
+- Order tracking
+- Multiple pending orders (Carts)
+- Order completion with inventory updates
+- Order history
+
+## Setup
 
 ```python
+# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # or Scripts\activate on Windows
+
+# Install dependencies
 pip install -r requirements.txt
 
+# Initialize database and load sample data
 python manage.py reset
+
+# Start the application
 python app.py
 ```
 
-May 2nd
+## Technical Details
 
-Marco Yu:
+### Database Models
 
-1. I moved all the login logout register stuff to the auth.py
-2. added API route to toggle admin
-3. Added admin column for customer
-4. Added admin dashboard to toggle in season projects
+- **Product**: Name, price, inventory level, category, season status
+- **Customer**: Profile, authentication, cart management
+- **Order**: Shopping cart state, completed orders
+- **Category**: Product categorization
+- **Coupon**: Discount codes with minimum purchase requirements
+- **Season**: Seasonal product groupings
 
-5. Redoing the log in system with WTForms and Flask-WTF for added CSRF protection with form.hidden_tag()
+### Tech Stack
 
-## What is CSRF?
+- **Backend**: Flask, Python
+- **Database**: SQLAlchemy ORM
+- **Authentication**: Flask-Login, OAuth 2.0
+- **Forms**: WTForms with CSRF protection
+- **Email**: Flask-Mail for notifications
+- **Frontend**: Bootstrap 5, Dark mode support
 
-CSRF stands for Cross-Site Request Forgery.
+## Testing
 
-It’s a type of web security vulnerability where a malicious website tricks a user into submitting a request to another website where they're already authenticated. If the victim is logged in (e.g. to your Flask app), the malicious request could do something harmful — like submit a form or change account details — without the user's permission.
+Comprehensive test suite includes:
 
-6. I added forget password, reset password
+1. Authentication tests
 
-May 7th
+   - Password hashing
+   - Login functionality
+   - Access control
 
-1. Added Testing for cart and auth (login)
-2. Added Active Cart (Cusotmer can have multiple pending orders, but only 1 is their active cart)
-3. Added Cart Template
-4. Add and remove items from cart
-5. Change product quantities from cart
-6. Generate order under a budget (Routes and templates)
-7. Added Dark mode toggle, saved as cookies
+2. Cart operation tests
+   - Adding items
+   - Updating quantities
+   - Removing items
+   - Budget-based cart generation
 
-Pytest made:
+## Security Features
 
-1. add items to cart
-2. update cart item quantity
-3. remove cart item
-4. Generate Cart under budget
-
-Auth test:
-
-1. Correctly hash password in database
-2. Accessing Login page
-3. Test if you can log in to dashboard with the correct credentials
+- CSRF Protection against cross-site request forgery
+- Secure password hashing
+- Two-factor authentication via email
+- Session management
+- OAuth integration for secure third-party authentication
