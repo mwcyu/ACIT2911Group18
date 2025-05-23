@@ -11,3 +11,4 @@ __pycache__/
 *.db
 .cursor/
 .github/instructions
+.coverage
